@@ -1,42 +1,62 @@
-import { useState } from 'react';
-import API from '../api';
+// src/pages/Signin.jsx
+import React, { useState } from 'react';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 
 const Signin = () => {
-  const [user, setUser] = useState({ email: '', password: '' });
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleChange = e => {
-    setUser({ ...user, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async e => {
+  const handleSignin = async (e) => {
     e.preventDefault();
     try {
-      const response = await API.post('/auth/signin', user);
-      
-      // Check if response contains a token (or other success indicator)
-      if (response.data && response.data.token) {
-        localStorage.setItem('token', response.data.token);
-        navigate('/home');
-      } else {
-        setError('Login failed. Please try again.');
-      }
+      await signInWithEmailAndPassword(auth, email, password);
+      setError('');
+      navigate('/'); // navigate to home on successful login
     } catch (err) {
-      // Server responded with an error (401, 403 etc.)
-      setError('Invalid email or password');
-      console.error(err.response?.data || err.message);
+      setError('Login failed. Please check your credentials.');
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-      <input type="email" name="email" placeholder="Email" onChange={handleChange} required />
-      <input type="password" name="password" placeholder="Password" onChange={handleChange} required />
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <button type="submit">Sign In</button>
-    </form>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <form
+        onSubmit={handleSignin}
+        className="bg-white p-6 rounded shadow-md w-80"
+      >
+        <h2 className="text-2xl font-bold mb-4 text-center">Sign In</h2>
+
+        {error && <p className="text-red-500 mb-3 text-sm">{error}</p>}
+
+        <input
+          type="email"
+          placeholder="Email"
+          className="w-full p-2 border border-gray-300 rounded mb-3"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+
+        <input
+          type="password"
+          placeholder="Password"
+          className="w-full p-2 border border-gray-300 rounded mb-3"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+
+        <button
+          type="submit"
+          className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+        >
+          Sign In
+        </button>
+      </form>
+    </div>
   );
 };
 
