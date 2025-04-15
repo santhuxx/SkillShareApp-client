@@ -1,3 +1,13 @@
-const Home = () => <h1>Welcome to the Home Page!</h1>;
+import React, { use, useState } from 'react'
 
-export default Home;
+const Home = () => {
+
+  return (
+    
+    <div>
+      Welcome to the Home Page! 
+    </div>
+  )
+}
+
+export default Home
