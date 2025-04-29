@@ -1,6 +1,6 @@
-// src/components/ProgressTracker.js
 import React, { useState } from 'react';
 import axios from 'axios';
+import { Box, TextField, Select, MenuItem, Button, Typography } from '@mui/material';
 
 function ProgressTracker({ planId }) {
   const [milestone, setMilestone] = useState('');
@@ -21,24 +21,51 @@ function ProgressTracker({ planId }) {
   };
 
   return (
-    <div>
-      <h2>Update Progress</h2>
+    <Box
+      sx={{
+        maxWidth: 400,
+        margin: 'auto',
+        padding: 3,
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        borderRadius: 2,
+        boxShadow: 3,
+      }}
+    >
+      <Typography variant="h5" gutterBottom align="center">
+        Update Progress
+      </Typography>
       <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Milestone"
+        <TextField
+          fullWidth
+          label="Milestone"
+          variant="outlined"
+          margin="normal"
           value={milestone}
           onChange={(e) => setMilestone(e.target.value)}
           required
         />
-        <select value={status} onChange={(e) => setStatus(e.target.value)}>
-          <option value="Not Started">Not Started</option>
-          <option value="In Progress">In Progress</option>
-          <option value="Completed">Completed</option>
-        </select>
-        <button type="submit">Update Progress</button>
+        <Select
+          fullWidth
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          displayEmpty
+          sx={{ marginBottom: 2 }}
+        >
+          <MenuItem value="Not Started">Not Started</MenuItem>
+          <MenuItem value="In Progress">In Progress</MenuItem>
+          <MenuItem value="Completed">Completed</MenuItem>
+        </Select>
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          fullWidth
+          sx={{ marginTop: 2 }}
+        >
+          Update Progress
+        </Button>
       </form>
-    </div>
+    </Box>
   );
 }
 

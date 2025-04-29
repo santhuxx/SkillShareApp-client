@@ -1,4 +1,7 @@
+import React from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { CssBaseline, Container } from '@mui/material';
 import Navbar from './components/Navbar';
 import Signup from './pages/SignUp';
 import Signin from './pages/SigninPage';
@@ -12,6 +15,23 @@ import MyPosts from './pages/MyPosts';
 import EditPost from './pages/EditPost';
 import './App.css';
 
+// Create a custom MUI theme
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#1976d2', // Blue
+    },
+    secondary: {
+      main: '#dc004e', // Red
+    },
+    background: {
+      default: '#f4f6f8', // Light gray background
+    },
+  },
+  typography: {
+    fontFamily: 'Roboto, Arial, sans-serif',
+  },
+});
 
 function App() {
   return (
