@@ -6,10 +6,12 @@ import Navbar from './components/Navbar';
 import Signup from './pages/SignUp';
 import Signin from './pages/SigninPage';
 import Home from './pages/Home';
+import CreatePost from './pages/CreatePost';
 import Profile from './pages/Profile';
 import LearningPlanForm from './components/learning/LearningPlanForm';
 import ProgressTracker from './components/learning/ProgressTracker';
 import Dashboard from './components/learning/Dashboard';
+import MyPosts from './pages/MyPosts';
 import './App.css';
 
 // Create a custom MUI theme
@@ -32,21 +34,22 @@ const theme = createTheme({
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline /> {/* Resets default browser styles */}
-      <Navbar />
-      <Container maxWidth="lg" sx={{ marginTop: 4 }}>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/signin" element={<Signin />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/learning/learning-plan" element={<LearningPlanForm />} />
-          <Route path="/learning/progress-tracker" element={<ProgressTracker />} />
-          <Route path="/learning/dashboard" element={<Dashboard />} />
-        </Routes>
-      </Container>
-    </ThemeProvider>
+    <>
+
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/signin" element={<Signin />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/learning/learning-plan" element={<LearningPlanForm />} />
+        <Route path="/learning/progress-tracker" element={<ProgressTracker />} />
+        <Route path="/learning/dashboard" element={<Dashboard />} />
+        <Route path="/createpost" element={<CreatePost />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/myposts" element={<MyPosts />} />
+        <Route path="/update-post/:postId" element={<EditPost />} />
+      </Routes>
+    </>
   );
 }
 
