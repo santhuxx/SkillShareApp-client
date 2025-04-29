@@ -1,59 +1,34 @@
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
-import { getAuth, signInWithCustomToken } from 'firebase/auth';
-import { app } from '../firebase';
+import React from "react";
+import { Button } from "@mui/material";
+import { FcGoogle } from "react-icons/fc";
 
 const GoogleSignIn = () => {
-  const handleSuccess = async (credentialResponse) => {
-    try {
-      console.log('Google auth successful, credential:', credentialResponse);
-      
-      const response = await fetch('http://localhost:8080/api/auth/google', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({ 
-          credential: credentialResponse.credential,
-          clientId: credentialResponse.clientId 
-        }),
-        credentials: 'include',
-        mode: 'cors'
-      });
-  
-      console.log('Auth response status:', response.status);
-      
-      const data = await response.json();
-      console.log('Auth response data:', data);
-  
-      if (!response.ok) {
-        throw new Error(data.message || `HTTP error! status: ${response.status}`);
-      }
-  
-      const auth = getAuth(app);
-      try {
-        console.log('Attempting Firebase sign-in with custom token');
-        const userCredential = await signInWithCustomToken(auth, data.customToken);
-        console.log('Firebase auth success:', userCredential.user);
-        window.location.href = '/dashboard';
-      } catch (firebaseError) {
-        console.error('Firebase sign-in failed:', firebaseError);
-        throw new Error('Firebase authentication failed: ' + firebaseError.message);
-      }
-    } catch (error) {
-      console.error('Full authentication error:', error);
-      alert('Login failed: ' + error.message);
-    }
+  const handleGoogleSignIn = () => {
+    window.location.href = 'http://localhost:8080/oauth2/authorization/google';
   };
 
   return (
-    <GoogleOAuthProvider clientId="919979525803-4tp3gnsaqqtguv9qjledtf1rpccke5jm.apps.googleusercontent.com">
-      <GoogleLogin
-        onSuccess={handleSuccess}
-        onError={() => console.log('Google login failed')}
-        useOneTap
-      />
-    </GoogleOAuthProvider>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <Button
+        variant="outlined"
+        startIcon={<FcGoogle size={24} />}
+        onClick={handleGoogleSignIn}
+        sx={{
+          padding: '10px 20px',
+          borderRadius: '0px',
+          textTransform: 'none',
+          fontSize: '16px',
+          backgroundColor: '#fff',
+          boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+          '&:hover': {
+            backgroundColor: '#f0f0f0',
+          },
+        }}
+      >
+        Sign in with Google
+      </Button>
+    </div>
   );
 };
+
 export default GoogleSignIn;
