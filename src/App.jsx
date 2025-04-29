@@ -12,6 +12,7 @@ import LearningPlanForm from './components/learning/LearningPlanForm';
 import ProgressTracker from './components/learning/ProgressTracker';
 import Dashboard from './components/learning/Dashboard';
 import MyPosts from './pages/MyPosts';
+import EditPost from './pages/EditPost';
 import './App.css';
 
 // Create a custom MUI theme
