@@ -9,6 +9,7 @@ import LearningPlanForm from './components/learning/LearningPlanForm';
 import ProgressTracker from './components/learning/ProgressTracker';
 import Dashboard from './components/learning/Dashboard';
 import MyPosts from './pages/MyPosts';
+import EditPost from './pages/EditPost';
 import './App.css';
 
 
@@ -27,6 +28,7 @@ function App() {
         <Route path="/createpost" element={<CreatePost />} />
         <Route path="/home" element={<Home />} />
         <Route path="/myposts" element={<MyPosts />} />
+        <Route path="/update-post/:postId" element={<EditPost />} />
       </Routes>
     </>
   );
