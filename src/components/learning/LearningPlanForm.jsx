@@ -1,6 +1,6 @@
-// src/components/LearningPlanForm.js
 import React, { useState } from 'react';
 import axios from 'axios';
+import { Box, TextField, Button, Typography } from '@mui/material';
 
 function LearningPlanForm() {
   const [title, setTitle] = useState('');
@@ -25,37 +25,73 @@ function LearningPlanForm() {
   };
 
   return (
-    <div>
-      <h2>Create Learning Plan</h2>
+    <Box
+      sx={{
+        maxWidth: 500,
+        margin: 'auto',
+        padding: 3,
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        borderRadius: 2,
+        boxShadow: 3,
+      }}
+    >
+      <Typography variant="h4" gutterBottom align="center">
+        Create Learning Plan
+      </Typography>
       <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Title"
+        <TextField
+          fullWidth
+          label="Title"
+          variant="outlined"
+          margin="normal"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
         />
-        <textarea
-          placeholder="Description"
+        <TextField
+          fullWidth
+          label="Description"
+          variant="outlined"
+          margin="normal"
+          multiline
+          rows={4}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           required
-        ></textarea>
-        <input
+        />
+        <TextField
+          fullWidth
+          label="Start Date"
           type="date"
+          variant="outlined"
+          margin="normal"
+          InputLabelProps={{ shrink: true }}
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
           required
         />
-        <input
+        <TextField
+          fullWidth
+          label="End Date"
           type="date"
+          variant="outlined"
+          margin="normal"
+          InputLabelProps={{ shrink: true }}
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
           required
         />
-        <button type="submit">Create Plan</button>
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          fullWidth
+          sx={{ marginTop: 2 }}
+        >
+          Create Plan
+        </Button>
       </form>
-    </div>
+    </Box>
   );
 }
 
