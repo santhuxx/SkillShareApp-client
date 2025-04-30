@@ -6,6 +6,12 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 
 
 ReactDOM.createRoot(document.getElementById('root')).render(
+  <GoogleOAuthProvider clientId={clientId}>
+import axios from 'axios';
+axios.defaults.withCredentials = true;
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  
     <BrowserRouter>
       <App />
     </BrowserRouter>

@@ -4,11 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Grid, Typography, Button, Card, CardMedia, CardContent, 
   CardHeader, Avatar, CircularProgress, Alert, Box, 
-  IconButton, Menu, MenuItem 
+
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { formatDistanceToNow } from 'date-fns';
+import PostInteractions from '../components/PostInteractions'; // Import the PostInteractions component
 
 const MyPosts = () => {
   const [posts, setPosts] = useState([]);
@@ -134,9 +135,17 @@ const MyPosts = () => {
 
                 {/* Description */}
                 <CardContent sx={{ pt: 0 }}>
+                  <Typography variant="body2" color="text.primary" sx={{ mb: 2 }}>
+                    {post.description}
+                  <Divider sx={{ my: 2 }} /> 
+
+                  </Typography>
+
+
                   <Typography variant="body1" color="text.primary" sx={{ mb: 2 }}>
                     {post.description}
                   </Typography>
+
 
                   {/* Media grid: 2 per row */}
                   <Box
@@ -177,6 +186,9 @@ const MyPosts = () => {
                     )}
                   </Box>
                 </CardContent>
+
+                {/* Add PostInteractions component here */}
+                <PostInteractions postId={post.id} />
               </Card>
             </Grid>
           ))
@@ -201,6 +213,8 @@ const MyPosts = () => {
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
+        container={document.body} // Add this to fix aria-hidden issues
+        disableScrollLock={true}  // Add this to prevent scroll locking
       >
         <MenuItem onClick={handleUpdatePost}>Update</MenuItem>
         <MenuItem onClick={handleDeletePost}>Delete</MenuItem>
