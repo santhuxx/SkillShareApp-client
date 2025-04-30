@@ -1,8 +1,7 @@
-<<<<<<< Updated upstream
+
 const Home = () => <h1>Welcome to the Home Page!</h1>;
 
 export default Home;
-=======
 "use client"
 
 import { useEffect, useState } from "react"
@@ -240,4 +239,3 @@ const HomePage = () => {
 
 export default HomePage
 
->>>>>>> Stashed changes

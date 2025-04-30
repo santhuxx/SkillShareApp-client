@@ -1,11 +1,14 @@
+import React from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { CssBaseline, Container } from '@mui/material';
 import Navbar from './components/Navbar';
 import Signup from './pages/SignUp';
 import Signin from './pages/SigninPage';
 import Home from './pages/Home';
+import CreatePost from './pages/CreatePost';
 import Profile from './pages/Profile';
-<<<<<<< Updated upstream
-=======
+
 import LearningPlanForm from './components/learning/LearningPlanForm';
 import ProgressTracker from './components/learning/ProgressTracker';
 import MyPosts from './pages/MyPosts';
@@ -16,11 +19,28 @@ import MyLearningPlans from './pages/MyLearningPlans';
 import ChatListPage from "./pages/ChatListPage";
 
 
->>>>>>> Stashed changes
+
 import './App.css';
 import axios from 'axios';
 axios.defaults.withCredentials = true;
 
+// Create a custom MUI theme
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#1976d2', // Blue
+    },
+    secondary: {
+      main: '#dc004e', // Red
+    },
+    background: {
+      default: '#f4f6f8', // Light gray background
+    },
+  },
+  typography: {
+    fontFamily: 'Roboto, Arial, sans-serif',
+  },
+});
 
 function App() {
   return (
@@ -31,8 +51,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/signin" element={<Signin />} />
         <Route path="/profile" element={<Profile />} />
-<<<<<<< Updated upstream
-=======
+
         <Route path="/learning/learning-plan" element={<LearningPlanForm />} />
         <Route path="/learning/progress-tracker" element={<ProgressTracker />} />
         <Route path="/learning/dashboard" element={<Dashboard />} />
@@ -45,7 +64,6 @@ function App() {
         <Route path="/message/:userId" element={<MessagePage />} />
         <Route path="/chat/:userId" element={<ChatListPage />} />
         <Route path="/chat" element={<ChatListPage />} />
->>>>>>> Stashed changes
       </Routes>
     </>
   );

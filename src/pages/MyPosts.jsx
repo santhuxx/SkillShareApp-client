@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Grid, Typography, Button, Card, CardMedia, CardContent, 
   CardHeader, Avatar, CircularProgress, Alert, Box, 
-  IconButton, Menu, MenuItem, Divider 
+
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -139,6 +139,11 @@ const MyPosts = () => {
                     {post.description}
                   <Divider sx={{ my: 2 }} /> 
 
+                  </Typography>
+
+
+                  <Typography variant="body1" color="text.primary" sx={{ mb: 2 }}>
+                    {post.description}
                   </Typography>
 
 
