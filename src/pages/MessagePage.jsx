@@ -1,6 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import NavBar from "../components/Navbar";
+import SideMenu from "../components/SideMenu";
+import {
+  Box,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Typography,
+  CircularProgress,
+  Alert,
+  Button,
+  IconButton,
+  Menu,
+} from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import SendIcon from "@mui/icons-material/Send";
 
 const MessagePage = () => {
   const { userId } = useParams();
@@ -10,24 +28,43 @@ const MessagePage = () => {
   const [error, setError] = useState("");
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [editContent, setEditContent] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOption, setSortOption] = useState("oldest");
+  const [groupOption, setGroupOption] = useState("none");
+  const messagesEndRef = useRef(null);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedMessageId, setSelectedMessageId] = useState(null);
+  const [receiverUsername, setReceiverUsername] = useState(userId);
 
   useEffect(() => {
-    const fetchMessages = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get(
+        // Fetch username
+        const usernameResponse = await axios.get(
+          `http://localhost:8080/api/chat/username/${userId}`,
+          { withCredentials: true }
+        );
+        setReceiverUsername(usernameResponse.data.username);
+
+        // Fetch messages
+        const messagesResponse = await axios.get(
           `http://localhost:8080/api/chat/messages/${userId}`,
           { withCredentials: true }
         );
-        setMessages(response.data);
+        setMessages(messagesResponse.data);
       } catch (err) {
-        setError(err.response?.data?.message || "Failed to fetch messages");
+        setError(err.response?.data?.message || "Failed to load data");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchMessages();
+    fetchData();
   }, [userId]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
@@ -65,9 +102,11 @@ const MessagePage = () => {
         }
       );
 
-      setMessages(messages.map(msg => 
-        msg.id === messageId ? { ...msg, content: editContent, edited: true } : msg
-      ));
+      setMessages(
+        messages.map((msg) =>
+          msg.id === messageId ? { ...msg, content: editContent, edited: true } : msg
+        )
+      );
       setEditingMessageId(null);
       setEditContent("");
     } catch (err) {
@@ -84,7 +123,7 @@ const MessagePage = () => {
         { withCredentials: true }
       );
 
-      setMessages(messages.filter(msg => msg.id !== messageId));
+      setMessages(messages.filter((msg) => msg.id !== messageId));
     } catch (err) {
       setError(err.response?.data?.message || "Failed to delete message");
     }
@@ -93,400 +132,509 @@ const MessagePage = () => {
   const startEditing = (message) => {
     setEditingMessageId(message.id);
     setEditContent(message.content);
+    handleCloseMenu();
   };
+
+  const handleOpenMenu = (event, messageId) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedMessageId(messageId);
+  };
+
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+    setSelectedMessageId(null);
+  };
+
+  const filteredMessages = messages
+    .filter((msg) =>
+      msg.content.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) =>
+      sortOption === "newest"
+        ? new Date(b.timestamp) - new Date(a.timestamp)
+        : new Date(a.timestamp) - new Date(b.timestamp)
+    );
 
   if (loading) {
     return (
-      <div style={styles.loadingContainer}>
-        <div style={styles.spinner}></div>
-        <p style={styles.loadingText}>Loading messages...</p>
-      </div>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100vh",
+          backgroundColor: "#f8f9fa",
+        }}
+      >
+        <CircularProgress sx={{ color: "#007AFF" }} />
+        <Typography variant="body1" sx={{ mt: 2, color: "#666" }}>
+          Loading messages...
+        </Typography>
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <div style={styles.errorContainer}>
-        <div style={styles.errorIcon}>⚠️</div>
-        <p style={styles.errorText}>{error}</p>
-        <button 
-          onClick={() => window.location.reload()} 
-          style={styles.retryButton}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100vh",
+          backgroundColor: "#f8f9fa",
+        }}
+      >
+        <Alert severity="error" sx={{ mb: 2, width: "80%", maxWidth: "400px" }}>
+          {error}
+        </Alert>
+        <Button
+          variant="contained"
+          color="error"
+          onClick={() => window.location.reload()}
+          sx={{ textTransform: "none" }}
         >
           Try Again
-        </button>
-      </div>
+        </Button>
+      </Box>
     );
   }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h2 style={styles.title}>Chat with {userId}</h2>
-      </div>
-      
-      <div style={styles.messagesContainer}>
-        {messages.length === 0 ? (
-          <div style={styles.emptyState}>
-            <div style={styles.emptyIcon}>💬</div>
-            <p style={styles.emptyText}>No messages yet</p>
-            <p style={styles.emptySubtext}>Send a message to start the conversation!</p>
-          </div>
-        ) : (
-          messages.map((message) => {
-            const isCurrentUser = message.senderId !== userId;
-
-            return (
-              <div 
-                key={message.id} 
-                style={{
-                  ...styles.messageWrapper,
-                  justifyContent: isCurrentUser ? 'flex-end' : 'flex-start'
-                }}
-              >
-                {editingMessageId === message.id ? (
-                  <div style={styles.editContainer}>
-                    <textarea
-                      value={editContent}
-                      onChange={(e) => setEditContent(e.target.value)}
-                      style={styles.editTextarea}
-                      autoFocus
-                    />
-                    <div style={styles.editButtons}>
-                      <button 
-                        onClick={() => setEditingMessageId(null)}
-                        style={styles.cancelButton}
-                      >
-                        Cancel
-                      </button>
-                      <button 
-                        onClick={() => handleEditMessage(message.id)}
-                        style={styles.saveButton}
-                      >
-                        Save Changes
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div style={{
-                    ...styles.messageBubble,
-                    backgroundColor: isCurrentUser ? '#007AFF' : '#F1F1F1',
-                    color: isCurrentUser ? 'white' : '#333'
-                  }}>
-                    <p style={styles.messageContent}>{message.content}</p>
-                    <div style={styles.messageMeta}>
-                      <span style={styles.messageTime}>
-                        {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                      {message.edited && (
-                        <span style={styles.editedLabel}>edited</span>
-                      )}
-                    </div>
-                    
-                    {isCurrentUser && (
-                      <div style={styles.messageActions}>
-                        <button 
-                          onClick={() => startEditing(message)}
-                          style={styles.actionButton}
-                        >
-                          ✏️
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteMessage(message.id)}
-                          style={styles.actionButton}
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })
-        )}
-      </div>
-      
-      <div style={styles.inputContainer}>
-        <input
-          type="text"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type a message..."
-          style={styles.messageInput}
-          onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-        />
-        <button 
-          onClick={handleSendMessage} 
-          style={styles.sendButton}
-          disabled={!newMessage.trim()}
+    <Box
+      sx={{
+        display: "flex",
+        height: "100vh",
+        backgroundColor: "#f8f9fa",
+        fontFamily: "'Segoe UI', Roboto, sans-serif",
+      }}
+    >
+      <NavBar />
+      <Box
+        sx={{
+          width: "250px",
+          height: "100vh",
+          position: "fixed",
+          top: "56px",
+          left: 0,
+          backgroundColor: "white",
+          boxShadow: "2px 0 5px rgba(0,0,0,0.1)",
+          "@media (max-width: 960px)": {
+            width: "200px",
+          },
+          "@media (max-width: 600px)": {
+            width: "60px",
+          },
+        }}
+      >
+        <SideMenu />
+      </Box>
+      <Box
+        sx={{
+          flex: 1,
+          marginLeft: "250px",
+          display: "flex",
+          flexDirection: "column",
+          height: "100vh",
+          "@media (max-width: 960px)": {
+            marginLeft: "200px",
+          },
+          "@media (max-width: 600px)": {
+            marginLeft: "60px",
+          },
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            p: 2,
+            backgroundColor: "white",
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+            mt: "56px",
+            "@media (max-width: 600px)": {
+              flexDirection: "column",
+              p: 1,
+              gap: 1,
+            },
+          }}
         >
-          <span style={styles.sendButtonText}>Send</span>
-          
-        </button>
-      </div>
-    </div>
-  );
-};
+          <TextField
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search messages..."
+            variant="outlined"
+            size="small"
+            sx={{
+              flex: 1,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "20px",
+              },
+            }}
+          />
+        </Box>
+        <Box
+          sx={{
+            p: 2,
+            borderBottom: "1px solid #e0e0e0",
+            backgroundColor: "white",
+            "@media (max-width: 600px)": {
+              p: 1,
+            },
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{
+              color: "#333",
+              fontWeight: 600,
+              "@media (max-width: 600px)": {
+                fontSize: "18px",
+              },
+            }}
+          >
+            Chat with {receiverUsername}
+          </Typography>
+        </Box>
+        <Box
+          sx={{
+            flex: 1,
+            overflowY: "auto",
+            p: 2,
+            backgroundColor: "white",
+            "@media (max-width: 600px)": {
+              p: 1,
+            },
+          }}
+        >
+          {filteredMessages.length === 0 ? (
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "100%",
+                color: "#666",
+                "@media (max-width: 600px)": {
+                  height: "60vh",
+                },
+              }}
+            >
+              <Typography sx={{ fontSize: "48px", mb: 1 }}>💬</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 500, mb: 1 }}>
+                No messages yet
+              </Typography>
+              <Typography variant="body2" sx={{ opacity: 0.7 }}>
+                Send a message to start the conversation!
+              </Typography>
+            </Box>
+          ) : (
+            <>
+              {filteredMessages.map((message) => {
+                const isCurrentUser = message.senderId !== userId;
 
-// Styles
-const styles = {
-  container: {
-    maxWidth: "600px",
-    margin: "0 auto",
-    padding: "20px",
-    height: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    backgroundColor: "#f8f9fa",
-    fontFamily: "'Segoe UI', Roboto, sans-serif"
-  },
-  header: {
-    padding: "15px 0",
-    borderBottom: "1px solid #e0e0e0",
-    marginBottom: "15px"
-  },
-  title: {
-    margin: 0,
-    color: "#333",
-    fontSize: "24px",
-    fontWeight: "600"
-  },
-  messagesContainer: {
-    flex: 1,
-    overflowY: "auto",
-    padding: "15px",
-    borderRadius: "12px",
-    backgroundColor: "white",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
-    marginBottom: "15px"
-  },
-  messageWrapper: {
-    display: "flex",
-    marginBottom: "12px"
-  },
-  messageBubble: {
-    maxWidth: "75%",
-    padding: "12px 16px",
-    borderRadius: "18px",
-    position: "relative",
-    boxShadow: "0 1px 2px rgba(0,0,0,0.1)"
-  },
-  messageContent: {
-    margin: "0 0 5px 0",
-    fontSize: "15px",
-    lineHeight: "1.4"
-  },
-  messageMeta: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    fontSize: "11px",
-    opacity: "0.8",
-    gap: "5px"
-  },
-  messageTime: {
-    fontStyle: "italic"
-  },
-  editedLabel: {
-    fontSize: "10px",
-    padding: "2px 5px",
-    borderRadius: "3px",
-    backgroundColor: "rgba(0,0,0,0.1)"
-  },
-  messageActions: {
-    position: "absolute",
-    top: "-15px",
-    right: "0",
-    display: "flex",
-    gap: "5px",
-    backgroundColor: "white",
-    padding: "3px",
-    borderRadius: "15px",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.2)"
-  },
-  actionButton: {
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    fontSize: "14px",
-    padding: "3px 5px",
-    borderRadius: "50%",
-    width: "25px",
-    height: "25px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    transition: "background 0.2s",
-    ':hover': {
-      backgroundColor: "#f0f0f0"
-    }
-  },
-  inputContainer: {
-    display: "flex",
-    gap: "10px",
-    padding: "10px",
-    backgroundColor: "white",
-    borderRadius: "25px",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.1)"
-  },
-  messageInput: {
-    flex: 1,
-    padding: "12px 15px",
-    borderRadius: "20px",
-    border: "1px solid #e0e0e0",
-    outline: "none",
-    fontSize: "15px",
-    ':focus': {
-      borderColor: "#007AFF"
-    }
-  },
-  sendButton: {
-    padding: "0 20px",
-    backgroundColor: "#007AFF",
-    color: "white",
-    border: "none",
-    borderRadius: "20px",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    gap: "5px",
-    transition: "background 0.2s",
-    ':disabled': {
-      backgroundColor: "#cccccc",
-      cursor: "not-allowed"
-    },
-    ':hover:not(:disabled)': {
-      backgroundColor: "#0066CC"
-    }
-  },
-  sendButtonText: {
-    fontSize: "14px",
-    fontWeight: "500"
-  },
-  sendIcon: {
-    fontSize: "16px"
-  },
-  editContainer: {
-    width: "100%",
-    backgroundColor: "#f5f5f5",
-    padding: "12px",
-    borderRadius: "12px",
-    marginBottom: "10px"
-  },
-  editTextarea: {
-    width: "100%",
-    padding: "10px",
-    borderRadius: "8px",
-    border: "1px solid #ddd",
-    minHeight: "80px",
-    fontSize: "15px",
-    resize: "none",
-    outline: "none",
-    marginBottom: "10px",
-    fontFamily: "inherit"
-  },
-  editButtons: {
-    display: "flex",
-    justifyContent: "flex-end",
-    gap: "10px"
-  },
-  cancelButton: {
-    padding: "8px 15px",
-    backgroundColor: "#f0f0f0",
-    border: "1px solid #ddd",
-    borderRadius: "6px",
-    cursor: "pointer",
-    transition: "background 0.2s",
-    ':hover': {
-      backgroundColor: "#e0e0e0"
-    }
-  },
-  saveButton: {
-    padding: "8px 15px",
-    backgroundColor: "#007AFF",
-    color: "white",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-    transition: "background 0.2s",
-    ':hover': {
-      backgroundColor: "#0066CC"
-    }
-  },
-  loadingContainer: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    height: "100vh",
-    backgroundColor: "#f8f9fa"
-  },
-  spinner: {
-    border: "4px solid rgba(0, 122, 255, 0.2)",
-    borderTop: "4px solid #007AFF",
-    borderRadius: "50%",
-    width: "40px",
-    height: "40px",
-    animation: "spin 1s linear infinite",
-    marginBottom: "15px"
-  },
-  loadingText: {
-    color: "#666",
-    fontSize: "16px"
-  },
-  errorContainer: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    height: "100vh",
-    backgroundColor: "#f8f9fa",
-    padding: "20px",
-    textAlign: "center"
-  },
-  errorIcon: {
-    fontSize: "48px",
-    marginBottom: "15px"
-  },
-  errorText: {
-    color: "#d32f2f",
-    fontSize: "18px",
-    marginBottom: "20px"
-  },
-  retryButton: {
-    padding: "10px 20px",
-    backgroundColor: "#d32f2f",
-    color: "white",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-    transition: "background 0.2s",
-    ':hover': {
-      backgroundColor: "#b71c1c"
-    }
-  },
-  emptyState: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    height: "100%",
-    color: "#666"
-  },
-  emptyIcon: {
-    fontSize: "48px",
-    marginBottom: "10px"
-  },
-  emptyText: {
-    fontSize: "18px",
-    fontWeight: "500",
-    marginBottom: "5px"
-  },
-  emptySubtext: {
-    fontSize: "14px",
-    opacity: "0.7"
-  }
+                return (
+                  <Box
+                    key={message.id}
+                    sx={{
+                      display: "flex",
+                      justifyContent: isCurrentUser ? "flex-end" : "flex-start",
+                      mb: 2,
+                      animation: "fadeIn 0.3s ease-in",
+                      "@media (max-width: 600px)": {
+                        mb: 1,
+                      },
+                    }}
+                  >
+                    {editingMessageId === message.id ? (
+                      <Box
+                        sx={{
+                          width: "100%",
+                          maxWidth: "75%",
+                          backgroundColor: "#f5f5f5",
+                          p: 2,
+                          borderRadius: "12px",
+                          boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)",
+                          "@media (max-width: 600px)": {
+                            maxWidth: "90%",
+                            p: 1.5,
+                          },
+                        }}
+                      >
+                        <TextField
+                          value={editContent}
+                          onChange={(e) => setEditContent(e.target.value)}
+                          fullWidth
+                          multiline
+                          rows={3}
+                          variant="outlined"
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: "8px",
+                              background: "white",
+                              "@media (max-width: 600px)": {
+                                fontSize: "14px",
+                              },
+                            },
+                          }}
+                          autoFocus
+                        />
+                        <Box
+                          sx={{
+                            mt: 1,
+                            display: "flex",
+                            justifyContent: "flex-end",
+                            gap: 1,
+                          }}
+                        >
+                          <Button
+                            variant="outlined"
+                            onClick={() => setEditingMessageId(null)}
+                            sx={{
+                              textTransform: "none",
+                              color: "#666",
+                              "@media (max-width: 600px)": {
+                                padding: "6px 12px",
+                                fontSize: "14px",
+                              },
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            variant="contained"
+                            onClick={() => handleEditMessage(message.id)}
+                            sx={{
+                              textTransform: "none",
+                              background: "#007AFF",
+                              "&:hover": { background: "#0066CC" },
+                              "@media (max-width: 600px)": {
+                                padding: "6px 12px",
+                                fontSize: "14px",
+                              },
+                            }}
+                          >
+                            Save
+                          </Button>
+                        </Box>
+                      </Box>
+                    ) : (
+                      <Box
+                        sx={{
+                          maxWidth: "75%",
+                          p: 2,
+                          borderRadius: "18px",
+                          backgroundColor: isCurrentUser ? "#007AFF" : "#F1F1F1",
+                          color: isCurrentUser ? "white" : "#333",
+                          boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)",
+                          position: "relative",
+                          "@media (max-width: 600px)": {
+                            maxWidth: "90%",
+                            p: 1.5,
+                            borderRadius: "15px",
+                          },
+                        }}
+                      >
+                        <Typography
+                          sx={{
+                            fontSize: "14px",
+                            fontWeight: 600,
+                            mb: 0.5,
+                            "@media (max-width: 600px)": {
+                              fontSize: "13px",
+                            },
+                          }}
+                        >
+                          {isCurrentUser ? "You" : (message.senderUsername || message.senderId)}
+                        </Typography>
+                        <Typography
+                          sx={{
+                            fontSize: "15px",
+                            lineHeight: 1.4,
+                            "@media (max-width: 600px)": {
+                              fontSize: "14px",
+                            },
+                          }}
+                        >
+                          {message.content}
+                        </Typography>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            mt: 1,
+                            fontSize: "11px",
+                            opacity: 0.8,
+                            "@media (max-width: 600px)": {
+                              fontSize: "10px",
+                            },
+                          }}
+                        >
+                          <Typography>
+                            {new Date(message.timestamp).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </Typography>
+                          {message.edited && (
+                            <Typography
+                              sx={{
+                                background: "rgba(0,0,0,0.1)",
+                                p: "2px 5px",
+                                borderRadius: "3px",
+                                "@media (max-width: 600px)": {
+                                  p: "1px 4px",
+                                  fontSize: "9px",
+                                },
+                              }}
+                            >
+                              edited
+                            </Typography>
+                          )}
+                        </Box>
+                        {isCurrentUser && (
+                          <Box
+                            sx={{
+                              position: "absolute",
+                              top: "-8px",
+                              right: 0,
+                              background: "white",
+                              p: 0.2,
+                              borderRadius: "12px",
+                              boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+                              "@media (max-width: 600px)": {
+                                p: 0.1,
+                              },
+                            }}
+                          >
+                            <IconButton
+                              size="small"
+                              onClick={(event) => handleOpenMenu(event, message.id)}
+                              sx={{
+                                color: "#666",
+                                "&:hover": { color: "#007AFF" },
+                                p: 0.3,
+                                "@media (max-width: 600px)": {
+                                  p: 0.2,
+                                },
+                              }}
+                            >
+                              <MoreVertIcon sx={{ fontSize: "16px" }} />
+                            </IconButton>
+                          </Box>
+                        )}
+                      </Box>
+                    )}
+                  </Box>
+                );
+              })}
+              <div ref={messagesEndRef} />
+            </>
+          )}
+        </Box>
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleCloseMenu}
+          PaperProps={{
+            elevation: 3,
+            sx: {
+              borderRadius: "6px",
+              minWidth: "100px",
+            },
+          }}
+        >
+          <MenuItem
+            onClick={() => {
+              const message = messages.find((msg) => msg.id === selectedMessageId);
+              if (message) startEditing(message);
+            }}
+            sx={{ color: "#007AFF", fontSize: "12px", py: 0.5 }}
+          >
+            Edit
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              handleDeleteMessage(selectedMessageId);
+              handleCloseMenu();
+            }}
+            sx={{ color: "#d32f2f", fontSize: "12px", py: 0.5 }}
+          >
+            Delete
+          </MenuItem>
+        </Menu>
+        <Box
+          sx={{
+            p: 2,
+            backgroundColor: "white",
+            borderTop: "1px solid #e0e0e0",
+            boxShadow: "0 -2px 4px rgba(0, 0, 0, 0.05)",
+            "@media (max-width: 600px)": {
+              p: 1,
+            },
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              gap: 1,
+              backgroundColor: "#f5f5f5",
+              borderRadius: "25px",
+              p: 1,
+              "@media (max-width: 600px)": {
+                flexDirection: "column",
+                borderRadius: "20px",
+                p: 0.5,
+              },
+            }}
+          >
+            <TextField
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Type a message..."
+              fullWidth
+              variant="outlined"
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "20px",
+                  background: "white",
+                  "&:hover": { borderColor: "#007AFF" },
+                  "&.Mui-focused": { borderColor: "#007AFF" },
+                  "@media (max-width: 600px)": {
+                    fontSize: "14px",
+                    "& .MuiOutlinedInput-root": { borderRadius: "15px" },
+                  },
+                },
+              }}
+              onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+            />
+            <Button
+              variant="contained"
+              onClick={handleSendMessage}
+              disabled={!newMessage.trim()}
+              sx={{
+                background: "#007AFF",
+                "&:hover": { background: "#0066CC" },
+                "&:disabled": { background: "#cccccc", cursor: "not-allowed" },
+                borderRadius: "20px",
+                minWidth: "50px",
+                "@media (max-width: 600px)": {
+                  borderRadius: "15px",
+                  minWidth: "100%",
+                  padding: "8px",
+                },
+              }}
+            >
+              <SendIcon />
+            </Button>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
+  );
 };
 
 export default MessagePage;
