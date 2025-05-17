@@ -1,7 +1,3 @@
-
-const Home = () => <h1>Welcome to the Home Page!</h1>;
-
-export default Home;
 "use client"
 
 import { useEffect, useState } from "react"
@@ -10,7 +6,6 @@ import { useNavigate } from "react-router-dom"
 import {
   Grid,
   Typography,
-  Button,
   Card,
   CardContent,
   CardHeader,
@@ -21,10 +16,12 @@ import {
   Menu,
   MenuItem,
   Divider,
+  TextField,
 } from "@mui/material"
-import AddIcon from "@mui/icons-material/Add"
 import { formatDistanceToNow } from "date-fns"
-import PostInteractions from "../components/PostInteractions" // Import the new component
+import PostInteractions from "../components/PostInteractions"
+import NavBar from "../components/Navbar"
+import SideMenu from "../components/SideMenu"
 
 const HomePage = () => {
   const [posts, setPosts] = useState([])
@@ -60,10 +57,6 @@ const HomePage = () => {
     fetchPosts()
   }, [])
 
-  const handleNavigateCreate = () => {
-    navigate("/createpost")
-  }
-
   const handleProfileClick = (event, userId, postId) => {
     setAnchorEl(event.currentTarget)
     setSelectedPostId({ userId, postId })
@@ -80,24 +73,14 @@ const HomePage = () => {
     handleCloseMenu()
   }
 
-  // Updated to use direct navigation to message page
   const handleNavigateMessage = () => {
     if (!selectedPostId || !selectedPostId.userId) {
       console.error("No user selected")
       return
     }
 
-    // Navigate directly to the message page with the user ID
     navigate(`/message/${selectedPostId.userId}`)
     handleCloseMenu()
-  }
-
-  const handleNavigateLearningPlanForm = () => {
-    navigate("/learning/learning-plan")
-  }
-
-  const handleNavigationMyLearningPlans = () => {
-    navigate("/mylearningplans")
   }
 
   if (isLoading) {
@@ -117,125 +100,184 @@ const HomePage = () => {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Box sx={{ textAlign: "center", mb: 5 }}>
-        <Typography variant="h3" gutterBottom>
-          Welcome to the Home Page!
-        </Typography>
-        <Box sx={{ mb: 3 }}>
-          <Button variant="contained" sx={{ mr: 2 }} onClick={handleNavigateCreate}>
-            Create Post
-          </Button>
-          <Button variant="outlined" sx={{ mr: 2 }} onClick={() => navigate("/profile")}>
-            Profile
-          </Button>
-          <Button variant="outlined" sx={{ mr: 2 }} onClick={() => navigate("/myposts")}>
-            My Posts
-          </Button>
-          <Button variant="outlined" sx={{ mr: 2 }} onClick={handleNavigateLearningPlanForm}>
-            Create Learning Plan
-          </Button>
-          <Button variant="outlined" onClick={handleNavigationMyLearningPlans}>
-            My Learning Plans
-          </Button>
-        </Box>
-        <Typography variant="h4">All Posts</Typography>
-      </Box>
+    <Box sx={{ display: "flex" }}>
+      {/* Side Menu */}
+      <SideMenu />
 
-      <Grid container spacing={4} direction="column" alignItems="center">
-        {Array.isArray(posts) && posts.length > 0 ? (
-          posts.map((post) => (
-            <Grid item xs={12} key={post.id} sx={{ width: "100%" }}>
-              <Card
-                sx={{
-                  borderRadius: 3,
-                  boxShadow: 3,
-                  overflow: "hidden",
-                  mb: 4,
-                  transition: "transform 0.3s ease, box-shadow 0.3s ease",
-                  "&:hover": {
-                    transform: "translateY(-5px)",
-                    boxShadow: 6,
+      {/* Main Content */}
+      <Box sx={{ flexGrow: 1, ml: "240px" }}>
+        {/* Navigation Bar */}
+        <NavBar />
+
+        <Box sx={{ p: 3, mt: 8 }}>
+          <Box sx={{ textAlign: "center", mb: 5 }}>
+            {/* Facebook-like Create Post Input */}
+            <Box
+              sx={{
+                maxWidth: 500,
+                mx: "auto",
+                mb: 5,
+              }}
+            >
+              <TextField
+                placeholder="What's on your mind?"
+                fullWidth
+                InputProps={{
+                  readOnly: true,
+                  sx: {
+                    borderRadius: 5,
+                    backgroundColor: "#f0f2f5",
+                    "&:hover": {
+                      backgroundColor: "#e8ecef",
+                    },
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      border: "none",
+                    },
+                    fontSize: "1.1rem",
+                    fontWeight: 400,
+                    color: "#65676b",
+                    cursor: "pointer",
+                    py: 1.5,
                   },
-                  width: 430,
-                  mx: "auto",
                 }}
-              >
-                <CardHeader
-                  avatar={
-                    <Avatar
-                      src={post.userImage}
-                      onClick={(e) => handleProfileClick(e, post.userId, post.id)}
-                      sx={{ cursor: "pointer" }}
-                    />
-                  }
-                  title={
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                      {post.userId}
-                    </Typography>
-                  }
-                  subheader={post.createdAt ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true }) : ""}
-                />
+                sx={{
+                  "& .MuiInputBase-root": {
+                    boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
+                  },
+                }}
+                onClick={() => navigate("/createpost")}
+              />
+            </Box>
+          </Box>
 
-                <CardContent sx={{ pt: 0 }}>
-                  <Typography variant="h5" color="text.primary" sx={{ fontWeight: 600, mb: 2 }}>
-                    {post.title}
-                  </Typography>
-                  <Typography variant="body2" color="text.primary" sx={{ mb: 2 }}>
-                    {post.description}
-                  <Divider sx={{ my: 2 }} /> 
-                  </Typography>
-
-                  <Box
-                    sx={{ display: "grid", gridTemplateColumns: "repeat(2, 200px)", gap: 0, justifyContent: "start" }}
+          <Grid container spacing={4} direction="column" alignItems="center">
+            {Array.isArray(posts) && posts.length > 0 ? (
+              posts.map((post) => (
+                <Grid item xs={12} key={post.id} sx={{ width: "100%" }}>
+                  <Card
+                    sx={{
+                      borderRadius: 3,
+                      boxShadow: 3,
+                      overflow: "hidden",
+                      mb: 4,
+                      transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                      "&:hover": {
+                        transform: "translateY(-5px)",
+                        boxShadow: 6,
+                      },
+                      width: 630,
+                      mx: "auto",
+                    }}
                   >
-                    {post.imageUrls &&
-                      post.imageUrls.map((url, index) => (
-                        <Box
-                          key={`image-${index}`}
-                          component="img"
-                          src={url}
-                          alt={`Post Image ${index + 1}`}
-                          sx={{ width: 200, height: 200, objectFit: "cover", borderRadius: 0 }}
+                    <CardHeader
+                      avatar={
+                        <Avatar
+                          src={post.userImage}
+                          onClick={(e) => handleProfileClick(e, post.userId, post.id)}
+                          sx={{ cursor: "pointer" }}
                         />
-                      ))}
-                    {post.videoUrl && (
+                      }
+                      title={
+                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                          {post.username}
+                        </Typography>
+                      }
+                      subheader={
+                        post.createdAt
+                          ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })
+                          : ""
+                      }
+                    />
+
+                    <CardContent sx={{ pt: 0 }}>
+                      <Typography variant="h5" color="text.primary" sx={{ fontWeight: 600, mb: 2 }}>
+                        {post.title}
+                      </Typography>
+                      <Typography variant="body2" color="text.primary" sx={{ mb: 2 }}>
+                        {post.description}
+                      </Typography>
+                      <Divider sx={{ my: 2 }} />
+
                       <Box
-                        key="video"
-                        component="video"
-                        src={post.videoUrl}
-                        controls
-                        sx={{ width: 200, height: 200, objectFit: "cover", borderRadius: 0 }}
-                      />
-                    )}
-                  </Box>
-                </CardContent>
+                        sx={{
+                          display: "grid",
+                          gridTemplateColumns: "repeat(2, 300px)",
+                          gap: 0,
+                          justifyContent: "start",
+                        }}
+                      >
+                        {post.imageUrls &&
+                          post.imageUrls.map((url, index) => (
+                            <Box
+                              key={`image-${index}`}
+                              component="img"
+                              src={url}
+                              alt={`Post Image ${index + 1}`}
+                              sx={{ width: 300, height: 300, objectFit: "cover", borderRadius: 0 }}
+                            />
+                          ))}
+                        {post.videoUrl && (
+                          <Box
+                            key="video"
+                            component="video"
+                            src={post.videoUrl}
+                            controls
+                            sx={{ width: 300, height: 300, objectFit: "cover", borderRadius: 0 }}
+                          />
+                        )}
+                      </Box>
+                    </CardContent>
 
-                {/* PostInteractions component here */}
-                <PostInteractions postId={post.id} />
-              </Card>
-            </Grid>
-          ))
-        ) : (
-          <Grid container direction="column" alignItems="center" sx={{ mt: 8 }}>
-            <Typography variant="h6" color="textSecondary" gutterBottom>
-              No posts available yet.
-            </Typography>
-            <Button variant="contained" startIcon={<AddIcon />} onClick={handleNavigateCreate}>
-              Create Your First Post
-            </Button>
+                    <PostInteractions postId={post.id} />
+                  </Card>
+                </Grid>
+              ))
+            ) : (
+              <Grid container direction="column" alignItems="center" sx={{ mt: 8 }}>
+                <Typography variant="h6" color="textSecondary" gutterBottom>
+                  No posts available yet.
+                </Typography>
+                <TextField
+                  placeholder="What's on your mind?"
+                  fullWidth
+                  InputProps={{
+                    readOnly: true,
+                    sx: {
+                      borderRadius: 5,
+                      backgroundColor: "#f0f2f5",
+                      "&:hover": {
+                        backgroundColor: "#e8ecef",
+                      },
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        border: "none",
+                      },
+                      fontSize: "1rem",
+                      fontWeight: 400,
+                      color: "#65676b",
+                      cursor: "pointer",
+                      py: 1.2,
+                    },
+                  }}
+                  sx={{
+                    "& .MuiInputBase-root": {
+                      boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
+                    },
+                    maxWidth: 430,
+                  }}
+                  onClick={() => navigate("/createpost")}
+                />
+              </Grid>
+            )}
           </Grid>
-        )}
-      </Grid>
 
-      {/* Menu for Profile Click */}
-      <Menu anchorEl={anchorEl} open={openMenu} onClose={handleCloseMenu}>
-        <MenuItem onClick={handleNavigateProfile}>View Profile</MenuItem>
-        <MenuItem onClick={handleNavigateMessage}>Message</MenuItem>
-      </Menu>
+          <Menu anchorEl={anchorEl} open={openMenu} onClose={handleCloseMenu}>
+            
+            <MenuItem onClick={handleNavigateMessage}>Message</MenuItem>
+          </Menu>
+        </Box>
+      </Box>
     </Box>
   )
 }
 
 export default HomePage
-

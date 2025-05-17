@@ -4,12 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Grid, Typography, Button, Card, CardMedia, CardContent, 
   CardHeader, Avatar, CircularProgress, Alert, Box, 
-
+  IconButton, Menu, MenuItem, Divider 
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { formatDistanceToNow } from 'date-fns';
 import PostInteractions from '../components/PostInteractions'; // Import the PostInteractions component
+import NavBar from '../components/Navbar';
+import SideMenu from '../components/SideMenu';
 
 const MyPosts = () => {
   const [posts, setPosts] = useState([]);
@@ -93,7 +95,15 @@ const MyPosts = () => {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ display: "flex" }}>
+      {/* Side Menu */}
+      <SideMenu />
+
+      {/* Main Content */}
+      <Box sx={{ flexGrow: 1, ml: "240px" }}>
+        {/* Navigation Bar */}
+        <NavBar />
+    <Box sx={{ p: 3 ,mt: 8 }}>
       <Grid container spacing={4} direction="column" alignItems="center">
         {Array.isArray(posts) && posts.length > 0 ? (
           posts.map((post) => (
@@ -109,7 +119,7 @@ const MyPosts = () => {
                     transform: 'translateY(-5px)',
                     boxShadow: 6,
                   },
-                  width: 430,
+                  width: 630,
                   mx: 'auto'
                 }}
               >
@@ -142,16 +152,11 @@ const MyPosts = () => {
                   </Typography>
 
 
-                  <Typography variant="body1" color="text.primary" sx={{ mb: 2 }}>
-                    {post.description}
-                  </Typography>
-
-
                   {/* Media grid: 2 per row */}
                   <Box
                     sx={{
                       display: 'grid',
-                      gridTemplateColumns: 'repeat(2, 200px)',
+                      gridTemplateColumns: 'repeat(2, 300px)',
                       gap: 0,
                       justifyContent: 'start'
                     }}
@@ -163,8 +168,8 @@ const MyPosts = () => {
                         src={url}
                         alt={`Post Image ${index + 1}`}
                         sx={{
-                          width: 200,
-                          height: 200,
+                          width: 300,
+                          height: 300,
                           objectFit: 'cover',
                           borderRadius: 0,
                         }}
@@ -177,8 +182,8 @@ const MyPosts = () => {
                         src={post.videoUrl}
                         controls
                         sx={{
-                          width: 200,
-                          height: 200,
+                          width: 300,
+                          height: 300,
                           objectFit: 'cover',
                           borderRadius: 0,
                         }}
@@ -219,6 +224,8 @@ const MyPosts = () => {
         <MenuItem onClick={handleUpdatePost}>Update</MenuItem>
         <MenuItem onClick={handleDeletePost}>Delete</MenuItem>
       </Menu>
+    </Box>
+    </Box>
     </Box>
   );
 };

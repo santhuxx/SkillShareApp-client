@@ -147,7 +147,7 @@ const ChatListPage = () => {
   }
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'grey.900',mt: 10 }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'grey.900',mt: 8 }}>
       <SideMenu />
       <Box sx={{ flexGrow: 1, ml: { xs: 0, md: '240px' }, transition: 'margin-left 0.3s' }}>
         <NavBar />

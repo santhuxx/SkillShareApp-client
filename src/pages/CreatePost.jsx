@@ -11,7 +11,13 @@ import {
   Stack,
   Card,
   CardMedia,
+  Fade,
+  Paper,
+  Container,
+  Grid,
 } from '@mui/material';
+import NavBar from '../components/Navbar';
+import SideMenu from '../components/SideMenu';
 
 const CreatePost = () => {
   const navigate = useNavigate();
@@ -23,11 +29,12 @@ const CreatePost = () => {
   const [error, setError] = useState('');
 
   const handleImageChange = (e) => {
-    if (e.target.files.length > 3) {
+    const files = [...e.target.files];
+    if (files.length > 3) {
       setError('You can upload a maximum of 3 images');
       return;
     }
-    setImages([...e.target.files]);
+    setImages(files);
     setError('');
   };
 
@@ -67,108 +74,262 @@ const CreatePost = () => {
   };
 
   return (
-    <Box maxWidth="md" mx="auto" my={5} p={3} boxShadow={3} borderRadius={2} bgcolor="white">
-      <Typography variant="h4" fontWeight="bold" mb={3} textAlign="center">
-        Create New Post
-      </Typography>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'grey.900' }}>
+      <SideMenu />
+      <Box sx={{ flexGrow: 1, ml: { xs: 0, md: '240px' }, transition: 'margin-left 0.3s' }}>
+        <NavBar />
+        <Fade in={true} timeout={800}>
+          <Container maxWidth="sm" sx={{ py: 5, mt: 10 }}>
+            <Paper 
+              elevation={8} 
+              sx={{ 
+                p: { xs: 3, sm: 4 }, 
+                borderRadius: 3, 
+                bgcolor: 'grey.800', 
+                color: 'white', 
+                background: 'linear-gradient(145deg,rgb(30, 30, 31) 0%,rgb(19, 20, 22) 100%)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+              }}
+            >
+              <Typography 
+                variant="h4" 
+                sx={{ 
+                  fontWeight: 'bold', 
+                  mb: 3, 
+                  color: 'primary.light', 
+                  textAlign: 'center',
+                  letterSpacing: 0.5,
+                }}
+              >
+                Create a New Post
+              </Typography>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
+              {error && (
+                <Alert 
+                  severity="error" 
+                  sx={{ 
+                    mb: 3, 
+                    bgcolor: 'error.dark', 
+                    color: 'white', 
+                    borderRadius: 2, 
+                    boxShadow: 1,
+                    py: 1,
+                  }}
+                >
+                  {error}
+                </Alert>
+              )}
 
-      <form onSubmit={handleSubmit}>
-        <Stack spacing={3}>
-          <TextField
-            label="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            fullWidth
-            required
-          />
-
-          <TextField
-            label="Description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            multiline
-            rows={4}
-            fullWidth
-            required
-          />
-
-          <Button
-            variant="contained"
-            component="label"
-          >
-            Upload Images (Max 3)
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              hidden
-              onChange={handleImageChange}
-            />
-          </Button>
-
-          {images.length > 0 && (
-            <Stack direction="row" spacing={2}>
-              {images.map((image, index) => (
-                <Card key={index} sx={{ width: 100, height: 100 }}>
-                  <CardMedia
-                    component="img"
-                    image={URL.createObjectURL(image)}
-                    alt={`Preview ${index + 1}`}
-                    sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              <form onSubmit={handleSubmit}>
+                <Stack spacing={2.5}>
+                  <TextField
+                    label="Title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    fullWidth
+                    required
+                    variant="outlined"
+                    sx={{ 
+                      '& .MuiOutlinedInput-root': { 
+                        bgcolor: 'grey.700', 
+                        color: 'white', 
+                        borderRadius: 2,
+                        '& fieldset': { borderColor: 'grey.600' },
+                        '&:hover fieldset': { borderColor: 'primary.light' },
+                        '&.Mui-focused fieldset': { borderColor: 'primary.main' },
+                      },
+                      '& .MuiInputLabel-root': { color: 'grey.400' },
+                      '& .MuiInputLabel-root.Mui-focused': { color: 'primary.light' },
+                    }}
                   />
-                </Card>
-              ))}
-            </Stack>
-          )}
 
-          <Button
-            variant="contained"
-            component="label"
-          >
-            Upload Video
-            <input
-              type="file"
-              accept="video/*"
-              hidden
-              onChange={handleVideoChange}
-            />
-          </Button>
+                  <TextField
+                    label="Description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    multiline
+                    rows={4}
+                    fullWidth
+                    required
+                    variant="outlined"
+                    sx={{ 
+                      '& .MuiOutlinedInput-root': { 
+                        bgcolor: 'grey.700', 
+                        color: 'white', 
+                        borderRadius: 2,
+                        '& fieldset': { borderColor: 'grey.600' },
+                        '&:hover fieldset': { borderColor: 'primary.light' },
+                        '&.Mui-focused fieldset': { borderColor: 'primary.main' },
+                      },
+                      '& .MuiInputLabel-root': { color: 'grey.400' },
+                      '& .MuiInputLabel-root.Mui-focused': { color: 'primary.light' },
+                    }}
+                  />
 
-          {video && (
-            <Box mt={2}>
-              <video controls width="100%" style={{ borderRadius: '8px' }}>
-                <source src={URL.createObjectURL(video)} type={video.type} />
-                Your browser does not support the video tag.
-              </video>
-            </Box>
-          )}
+                  <Button
+                    variant="contained"
+                    component="label"
+                    sx={{
+                      py: 1.2,
+                      borderRadius: 2,
+                      bgcolor: 'grey.700',
+                      color: 'white',
+                      textTransform: 'none',
+                      fontWeight: 'medium',
+                      '&:hover': { 
+                        bgcolor: 'grey.600', 
+                        transform: 'translateY(-2px)', 
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                      },
+                      transition: 'all 0.3s',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                    }}
+                  >
+                    Upload Images (Max 3)
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      hidden
+                      onChange={handleImageChange}
+                    />
+                  </Button>
 
-          <Stack direction="row" spacing={2} justifyContent="flex-end">
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => navigate('/')}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={isLoading}
-              startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : null}
-            >
-              {isLoading ? 'Creating...' : 'Create Post'}
-            </Button>
-          </Stack>
-        </Stack>
-      </form>
+                  {images.length > 0 && (
+                    <Grid container spacing={2}>
+                      {images.map((image, index) => (
+                        <Grid item xs={4} key={index}>
+                          <Card 
+                            sx={{ 
+                              width: '100%', 
+                              height: 100, 
+                              borderRadius: 2, 
+                              bgcolor: 'grey.700', 
+                              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)', 
+                              transition: 'transform 0.3s, box-shadow 0.3s',
+                              '&:hover': { transform: 'scale(1.05)', boxShadow: '0 6px 16px rgba(0, 0, 0, 0.3)' },
+                            }}
+                          >
+                            <CardMedia
+                              component="img"
+                              image={URL.createObjectURL(image)}
+                              alt={`Preview ${index + 1}`}
+                              sx={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 2 }}
+                            />
+                          </Card>
+                        </Grid>
+                      ))}
+                    </Grid>
+                  )}
+
+                  <Button
+                    variant="contained"
+                    component="label"
+                    sx={{
+                      py: 1.2,
+                      borderRadius: 2,
+                      bgcolor: 'grey.700',
+                      color: 'white',
+                      textTransform: 'none',
+                      fontWeight: 'medium',
+                      '&:hover': { 
+                        bgcolor: 'grey.600', 
+                        transform: 'translateY(-2px)', 
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                      },
+                      transition: 'all 0.3s',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                    }}
+                  >
+                    Upload Video
+                    <input
+                      type="file"
+                      accept="video/*"
+                      hidden
+                      onChange={handleVideoChange}
+                    />
+                  </Button>
+
+                  {video && (
+                    <Box 
+                      sx={{ 
+                        borderRadius: 2, 
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)', 
+                        overflow: 'hidden',
+                        transition: 'transform 0.3s',
+                        '&:hover': { transform: 'scale(1.02)' },
+                        maxWidth: 400, // Reduced video size for better proportionality
+                        mx: 'auto',
+                      }}
+                    >
+                      <video 
+                        controls 
+                        width="100%" 
+                        style={{ 
+                          borderRadius: '8px', 
+                          maxHeight: 200, // Constrain height for compact preview
+                        }}
+                      >
+                        <source src={URL.createObjectURL(video)} type={video.type} />
+                        Your browser does not support the video tag.
+                      </video>
+                    </Box>
+                  )}
+
+                  <Stack direction="row" spacing={2} justifyContent="flex-end">
+                    <Button
+                      variant="outlined"
+                      color="secondary"
+                      onClick={() => navigate('/')}
+                      sx={{
+                        py: 1.2,
+                        borderRadius: 2,
+                        borderColor: 'grey.600',
+                        color: 'grey.300',
+                        textTransform: 'none',
+                        fontWeight: 'medium',
+                        '&:hover': { 
+                          borderColor: 'primary.light', 
+                          color: 'primary.light', 
+                          transform: 'translateY(-2px)', 
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                        },
+                        transition: 'all 0.3s',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      color="primary"
+                      disabled={isLoading}
+                      startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : null}
+                      sx={{
+                        py: 1.2,
+                        borderRadius: 2,
+                        bgcolor: 'primary.main',
+                        textTransform: 'none',
+                        fontWeight: 'bold',
+                        '&:hover': { 
+                          bgcolor: 'primary.dark', 
+                          transform: 'translateY(-2px)', 
+                          boxShadow: '0 6px 16px rgba(0, 0, 0, 0.3)',
+                        },
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                        transition: 'all 0.3s',
+                      }}
+                    >
+                      {isLoading ? 'Creating...' : 'Create Post'}
+                    </Button>
+                  </Stack>
+                </Stack>
+              </form>
+            </Paper>
+          </Container>
+        </Fade>
+      </Box>
     </Box>
   );
 };

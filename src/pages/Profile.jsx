@@ -64,15 +64,7 @@ const Profile = () => {
             {user.email}
           </Typography>
           <Divider sx={{ marginBottom: '20px' }} />
-          <Typography variant="body1" sx={{ fontWeight: '500', marginBottom: '5px' }}>
-            Bio:
-          </Typography>
-          <Typography variant="body2" color="textSecondary" sx={{ marginBottom: '15px' }}>
-            {user.bio || 'No bio available.'}
-          </Typography>
-          <Typography variant="body1" sx={{ fontWeight: '500', marginBottom: '10px' }}>
-            Joined on: {formatDate(user.created_at)}
-          </Typography>
+          
           <Button
             variant="contained"
             color="success"
