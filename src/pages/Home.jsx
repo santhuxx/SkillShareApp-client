@@ -39,14 +39,20 @@ const HomePage = () => {
           withCredentials: true,
         })
 
+        let fetchedPosts = []
         if (Array.isArray(response.data)) {
-          setPosts(response.data)
+          fetchedPosts = response.data
         } else if (Array.isArray(response.data.posts)) {
-          setPosts(response.data.posts)
+          fetchedPosts = response.data.posts
         } else {
           setPosts([])
           setError("Invalid data format from server.")
+          return
         }
+
+        // Sort posts by createdAt in descending order (newest first)
+        fetchedPosts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        setPosts(fetchedPosts)
       } catch (err) {
         setError(err.response?.data?.message || "Failed to fetch posts.")
       } finally {
@@ -85,22 +91,22 @@ const HomePage = () => {
 
   if (isLoading) {
     return (
-      <Grid container justifyContent="center" alignItems="center" sx={{ height: "80vh" }}>
-        <CircularProgress />
+      <Grid container justifyContent="center" alignItems="center" sx={{ height: "80vh", bgcolor: "#121212" }}>
+        <CircularProgress sx={{ color: "#ffffff" }} />
       </Grid>
     )
   }
 
   if (error) {
     return (
-      <Grid container justifyContent="center" alignItems="center" sx={{ height: "80vh" }}>
-        <Alert severity="error">{error}</Alert>
+      <Grid container justifyContent="center" alignItems="center" sx={{ height: "80vh", bgcolor: "#121212" }}>
+        <Alert severity="error" sx={{ bgcolor: "#2c2c2c", color: "#ffffff" }}>{error}</Alert>
       </Grid>
     )
   }
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: "flex", bgcolor: "#121212", minHeight: "100vh" }}>
       {/* Side Menu */}
       <SideMenu />
 
@@ -109,7 +115,7 @@ const HomePage = () => {
         {/* Navigation Bar */}
         <NavBar />
 
-        <Box sx={{ p: 3, mt: 8 }}>
+        <Box sx={{ p: 3, mt: 8, bgcolor: "#121212" }}>
           <Box sx={{ textAlign: "center", mb: 5 }}>
             {/* Facebook-like Create Post Input */}
             <Box
@@ -126,23 +132,23 @@ const HomePage = () => {
                   readOnly: true,
                   sx: {
                     borderRadius: 5,
-                    backgroundColor: "#f0f2f5",
+                    backgroundColor: "#1e1e1e",
                     "&:hover": {
-                      backgroundColor: "#e8ecef",
+                      backgroundColor: "#252525",
                     },
                     "& .MuiOutlinedInput-notchedOutline": {
                       border: "none",
                     },
                     fontSize: "1.1rem",
                     fontWeight: 400,
-                    color: "#65676b",
+                    color: "#e0e0e0",
                     cursor: "pointer",
                     py: 1.5,
                   },
                 }}
                 sx={{
                   "& .MuiInputBase-root": {
-                    boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
+                    boxShadow: "0 1px 2px rgba(0, 0, 0, 0.3)",
                   },
                 }}
                 onClick={() => navigate("/createpost")}
@@ -167,6 +173,7 @@ const HomePage = () => {
                       },
                       width: 630,
                       mx: "auto",
+                      bgcolor: "#1e1e1e",
                     }}
                   >
                     <CardHeader
@@ -174,29 +181,33 @@ const HomePage = () => {
                         <Avatar
                           src={post.userImage}
                           onClick={(e) => handleProfileClick(e, post.userId, post.id)}
-                          sx={{ cursor: "pointer" }}
+                          sx={{ cursor: "pointer", bgcolor: "#333333" }}
                         />
                       }
                       title={
-                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: "#ffffff" }}>
                           {post.username}
                         </Typography>
                       }
                       subheader={
-                        post.createdAt
-                          ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })
-                          : ""
+                        post.createdAt ? (
+                          <Typography variant="body2" sx={{ color: "#b0b0b0" }}>
+                            {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+                          </Typography>
+                        ) : (
+                          ""
+                        )
                       }
                     />
 
                     <CardContent sx={{ pt: 0 }}>
-                      <Typography variant="h5" color="text.primary" sx={{ fontWeight: 600, mb: 2 }}>
+                      <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: "#ffffff" }}>
                         {post.title}
                       </Typography>
-                      <Typography variant="body2" color="text.primary" sx={{ mb: 2 }}>
+                      <Typography variant="body2" sx={{ mb: 2, color: "#b0b0b0" }}>
                         {post.description}
                       </Typography>
-                      <Divider sx={{ my: 2 }} />
+                      <Divider sx={{ my: 2, bgcolor: "#333333" }} />
 
                       <Box
                         sx={{
@@ -234,7 +245,7 @@ const HomePage = () => {
               ))
             ) : (
               <Grid container direction="column" alignItems="center" sx={{ mt: 8 }}>
-                <Typography variant="h6" color="textSecondary" gutterBottom>
+                <Typography variant="h6" sx={{ color: "#b0b0b0" }} gutterBottom>
                   No posts available yet.
                 </Typography>
                 <TextField
@@ -244,23 +255,23 @@ const HomePage = () => {
                     readOnly: true,
                     sx: {
                       borderRadius: 5,
-                      backgroundColor: "#f0f2f5",
+                      backgroundColor: "#1e1e1e",
                       "&:hover": {
-                        backgroundColor: "#e8ecef",
+                        backgroundColor: "#252525",
                       },
                       "& .MuiOutlinedInput-notchedOutline": {
                         border: "none",
                       },
                       fontSize: "1rem",
                       fontWeight: 400,
-                      color: "#65676b",
+                      color: "#e0e0e0",
                       cursor: "pointer",
                       py: 1.2,
                     },
                   }}
                   sx={{
                     "& .MuiInputBase-root": {
-                      boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
+                      boxShadow: "0 1px 2px rgba(0, 0, 0, 0.3)",
                     },
                     maxWidth: 430,
                   }}
@@ -270,9 +281,30 @@ const HomePage = () => {
             )}
           </Grid>
 
-          <Menu anchorEl={anchorEl} open={openMenu} onClose={handleCloseMenu}>
-            
-            <MenuItem onClick={handleNavigateMessage}>Message</MenuItem>
+          <Menu
+            anchorEl={anchorEl}
+            open={openMenu}
+            onClose={handleCloseMenu}
+            PaperProps={{
+              sx: {
+                bgcolor: "#1e1e1e",
+                color: "#ffffff",
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.3)",
+              },
+            }}
+          >
+            <MenuItem
+              onClick={handleNavigateProfile}
+              sx={{ color: "#ffffff", "&:hover": { bgcolor: "#333333" } }}
+            >
+              Profile
+            </MenuItem>
+            <MenuItem
+              onClick={handleNavigateMessage}
+              sx={{ color: "#ffffff", "&:hover": { bgcolor: "#333333" } }}
+            >
+              Message
+            </MenuItem>
           </Menu>
         </Box>
       </Box>

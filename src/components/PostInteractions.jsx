@@ -244,8 +244,8 @@ const PostInteractions = ({ postId }) => {
   };
 
   return (
-    <Box sx={{ mt: 0 }}>
-      <Divider />
+    <Box sx={{ mt: 0, bgcolor: "#1e1e1e" }}>
+      <Divider sx={{ bgcolor: "#333333" }} />
 
       {/* Like and Comment Bar */}
       <Box
@@ -254,7 +254,7 @@ const PostInteractions = ({ postId }) => {
           justifyContent: 'space-around',
           alignItems: 'center',
           py: 1,
-          backgroundColor: '#ffffff',
+          backgroundColor: '#1e1e1e',
           borderRadius: 2,
           mx: 2,
         }}
@@ -264,19 +264,19 @@ const PostInteractions = ({ postId }) => {
           disabled={likesLoading}
           startIcon={
             likesLoading ? (
-              <CircularProgress size={16} />
+              <CircularProgress size={16} sx={{ color: "#ffffff" }} />
             ) : liked ? (
-              <Favorite sx={{ color: '#1877F2' }} />
+              <Favorite sx={{ color: '#ff5252' }} />
             ) : (
-              <FavoriteBorder />
+              <FavoriteBorder sx={{ color: '#b0b0b0' }} />
             )
           }
           sx={{
             textTransform: 'none',
-            color: liked ? '#1877F2' : '#65676b',
+            color: liked ? '#ff5252' : '#b0b0b0',
             fontWeight: 500,
             '&:hover': {
-              backgroundColor: '#e8ecef',
+              backgroundColor: '#252525',
             },
             borderRadius: 2,
             px: 2,
@@ -287,13 +287,13 @@ const PostInteractions = ({ postId }) => {
         </Button>
         <Button
           onClick={toggleComments}
-          startIcon={<ChatBubbleOutline />}
+          startIcon={<ChatBubbleOutline sx={{ color: '#b0b0b0' }} />}
           sx={{
             textTransform: 'none',
-            color: '#65676b',
+            color: '#b0b0b0',
             fontWeight: 500,
             '&:hover': {
-              backgroundColor: '#e8ecef',
+              backgroundColor: '#252525',
             },
             borderRadius: 2,
             px: 2,
@@ -304,28 +304,32 @@ const PostInteractions = ({ postId }) => {
         </Button>
       </Box>
 
-      <Divider />
+      <Divider sx={{ bgcolor: "#333333" }} />
 
       {/* Comments Section */}
       <Collapse in={showComments}>
         {commentsLoading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-            <CircularProgress size={24} />
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 2, bgcolor: "#1e1e1e" }}>
+            <CircularProgress size={24} sx={{ color: "#ffffff" }} />
           </Box>
         ) : (
           <>
             {error && (
-              <Alert severity="error" sx={{ my: 1 }} onClose={() => setError(null)}>
+              <Alert
+                severity="error"
+                sx={{ my: 1, bgcolor: "#2c2c2c", color: "#ffffff" }}
+                onClose={() => setError(null)}
+              >
                 {error}
               </Alert>
             )}
 
-            <List sx={{ py: 0 }}>
+            <List sx={{ py: 0, bgcolor: "#1e1e1e" }}>
               {comments && comments.length > 0 ? (
                 comments.map((comment) => (
                   <React.Fragment key={comment.id || `temp-${Math.random()}`}>
                     {editMode && selectedComment?.id === comment.id ? (
-                      <Box sx={{ p: 2, display: 'flex', alignItems: 'center' }}>
+                      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', bgcolor: "#1e1e1e" }}>
                         <TextField
                           fullWidth
                           size="small"
@@ -333,9 +337,26 @@ const PostInteractions = ({ postId }) => {
                           onChange={(e) => setEditContent(e.target.value)}
                           variant="outlined"
                           disabled={loading}
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: 5,
+                              backgroundColor: '#252525',
+                              color: '#e0e0e0',
+                              '&:hover': {
+                                backgroundColor: '#2c2c2c',
+                              },
+                              '& .MuiOutlinedInput-notchedOutline': {
+                                border: 'none',
+                              },
+                            },
+                          }}
                         />
-                        <Button onClick={handleSaveEdit} sx={{ ml: 1 }} disabled={loading}>
-                          {loading ? <CircularProgress size={16} /> : 'Save'}
+                        <Button
+                          onClick={handleSaveEdit}
+                          sx={{ ml: 1, color: '#ffffff', bgcolor: '#333333', '&:hover': { bgcolor: '#444444' } }}
+                          disabled={loading}
+                        >
+                          {loading ? <CircularProgress size={16} sx={{ color: "#ffffff" }} /> : 'Save'}
                         </Button>
                         <Button
                           onClick={() => {
@@ -343,7 +364,7 @@ const PostInteractions = ({ postId }) => {
                             setSelectedComment(null);
                             setEditContent('');
                           }}
-                          sx={{ ml: 1 }}
+                          sx={{ ml: 1, color: '#ffffff', bgcolor: '#333333', '&:hover': { bgcolor: '#444444' } }}
                           disabled={loading}
                         >
                           Cancel
@@ -352,6 +373,7 @@ const PostInteractions = ({ postId }) => {
                     ) : (
                       <ListItem
                         alignItems="flex-start"
+                        sx={{ bgcolor: "#1e1e1e" }}
                         secondaryAction={
                           <IconButton
                             edge="end"
@@ -366,17 +388,20 @@ const PostInteractions = ({ postId }) => {
                             aria-expanded={
                               Boolean(anchorEl) && selectedComment?.id === comment.id ? 'true' : undefined
                             }
+                            sx={{ color: '#b0b0b0', '&:hover': { color: '#ffffff' } }}
                           >
                             <MoreVert fontSize="small" />
                           </IconButton>
                         }
                       >
                         <ListItemAvatar>
-                          <Avatar>{comment.userId?.charAt(0) || 'U'}</Avatar>
+                          <Avatar sx={{ bgcolor: '#333333', color: '#ffffff' }}>
+                            {comment.userId?.charAt(0) || 'U'}
+                          </Avatar>
                         </ListItemAvatar>
                         <ListItemText
                           primary={
-                            <Typography component="span" variant="body2" fontWeight="bold">
+                            <Typography component="span" variant="body2" fontWeight="bold" sx={{ color: '#ffffff' }}>
                               {comment.userId || 'Unknown User'}
                             </Typography>
                           }
@@ -385,7 +410,7 @@ const PostInteractions = ({ postId }) => {
                               <Typography
                                 component="span"
                                 variant="body2"
-                                color="text.primary"
+                                sx={{ color: '#e0e0e0' }}
                                 display="block"
                               >
                                 {comment.content || ''}
@@ -393,7 +418,7 @@ const PostInteractions = ({ postId }) => {
                               <Typography
                                 component="span"
                                 variant="caption"
-                                color="text.secondary"
+                                sx={{ color: '#b0b0b0' }}
                                 display="block"
                               >
                                 {formatTimestamp(comment.createdAt)}
@@ -406,7 +431,7 @@ const PostInteractions = ({ postId }) => {
                   </React.Fragment>
                 ))
               ) : (
-                <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
+                <Typography variant="body2" sx={{ py: 2, textAlign: 'center', color: '#b0b0b0' }}>
                   No comments yet. Be the first to comment!
                 </Typography>
               )}
@@ -431,18 +456,32 @@ const PostInteractions = ({ postId }) => {
               slotProps={{
                 paper: {
                   elevation: 3,
-                  sx: { minWidth: 120 },
+                  sx: { minWidth: 120, bgcolor: '#1e1e1e', color: '#ffffff' },
                 },
               }}
               container={document.body}
               disableScrollLock={true}
             >
-              <MenuItem onClick={handleEditComment}>Edit</MenuItem>
-              <MenuItem onClick={handleDeleteComment}>Delete</MenuItem>
+              <MenuItem
+                onClick={handleEditComment}
+                sx={{ color: '#ffffff', '&:hover': { bgcolor: '#333333' } }}
+              >
+                Edit
+              </MenuItem>
+              <MenuItem
+                onClick={handleDeleteComment}
+                sx={{ color: '#ff5252', '&:hover': { bgcolor: '#333333' } }}
+              >
+                Delete
+              </MenuItem>
             </Menu>
 
             {!editMode && (
-              <Box component="form" onSubmit={handleCommentSubmit} sx={{ p: 2, display: 'flex', alignItems: 'center' }}>
+              <Box
+                component="form"
+                onSubmit={handleCommentSubmit}
+                sx={{ p: 2, display: 'flex', alignItems: 'center', bgcolor: '#1e1e1e' }}
+              >
                 <TextField
                   fullWidth
                   size="small"
@@ -454,9 +493,10 @@ const PostInteractions = ({ postId }) => {
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       borderRadius: 5,
-                      backgroundColor: '#f0f2f5',
+                      backgroundColor: '#252525',
+                      color: '#e0e0e0',
                       '&:hover': {
-                        backgroundColor: '#e8ecef',
+                        backgroundColor: '#2c2c2c',
                       },
                       '& .MuiOutlinedInput-notchedOutline': {
                         border: 'none',
@@ -464,8 +504,12 @@ const PostInteractions = ({ postId }) => {
                     },
                   }}
                 />
-                <IconButton type="submit" sx={{ ml: 1 }} disabled={loading || !newComment.trim()}>
-                  {loading ? <CircularProgress size={16} /> : <Send />}
+                <IconButton
+                  type="submit"
+                  sx={{ ml: 1, color: '#b0b0b0', '&:hover': { color: '#ffffff' } }}
+                  disabled={loading || !newComment.trim()}
+                >
+                  {loading ? <CircularProgress size={16} sx={{ color: "#ffffff" }} /> : <Send />}
                 </IconButton>
               </Box>
             )}

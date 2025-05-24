@@ -1,34 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { 
-  Box, 
-  Typography, 
-  Card, 
-  CardContent, 
-  CardActions, 
-  Button, 
-  Grid, 
-  Chip,
-  CircularProgress,
-  Container,
-  Paper,
-  Divider,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField
+  Box, Typography, Card, CardContent, CardActions, Button, Grid, Chip,
+  CircularProgress, Container, Dialog, DialogTitle, DialogContent, 
+  DialogActions, TextField
 } from '@mui/material';
 import { format } from 'date-fns';
-import NavBar from '../components/Navbar'; // Adjust the path as needed
-import SideMenu from '../components/SideMenu'; // Adjust the path as needed
+import NavBar from '../components/Navbar';
+import SideMenu from '../components/SideMenu';
 
 function MyLearningPlans() {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  // Edit modal state
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState(null);
   const [editFormData, setEditFormData] = useState({
@@ -38,6 +23,7 @@ function MyLearningPlans() {
     endDate: ''
   });
   const [updating, setUpdating] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchLearningPlans();
@@ -46,7 +32,9 @@ function MyLearningPlans() {
   const fetchLearningPlans = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:8080/api/learning-plans');
+      const response = await axios.get('http://localhost:8080/api/learning-plans', {
+        withCredentials: true,
+      });
       setPlans(response.data);
       setError(null);
     } catch (err) {
@@ -60,7 +48,9 @@ function MyLearningPlans() {
   const handleDelete = async (planId) => {
     if (window.confirm('Are you sure you want to delete this learning plan?')) {
       try {
-        await axios.delete(`http://localhost:8080/api/learning-plans/${planId}`);
+        await axios.delete(`http://localhost:8080/api/learning-plans/${planId}`, {
+          withCredentials: true,
+        });
         setPlans(plans.filter(plan => plan.id !== planId));
       } catch (err) {
         console.error('Error deleting learning plan:', err);
@@ -95,9 +85,7 @@ function MyLearningPlans() {
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
-    
     if (!editingPlan) return;
-    
     try {
       setUpdating(true);
       const formData = new FormData();
@@ -105,12 +93,11 @@ function MyLearningPlans() {
       formData.append('description', editFormData.description);
       formData.append('startDate', editFormData.startDate);
       formData.append('endDate', editFormData.endDate);
-      
       const response = await axios.put(
         `http://localhost:8080/api/learning-plans/${editingPlan.id}`,
-        formData
+        formData,
+        { withCredentials: true }
       );
-      
       setPlans(plans.map(plan => 
         plan.id === editingPlan.id ? response.data : plan
       ));
@@ -127,7 +114,6 @@ function MyLearningPlans() {
     const now = new Date();
     const start = new Date(startDate);
     const end = new Date(endDate);
-
     if (now < start) return { label: 'Upcoming', color: 'info' };
     if (now > end) return { label: 'Completed', color: 'success' };
     return { label: 'Active', color: 'warning' };
@@ -137,7 +123,7 @@ function MyLearningPlans() {
     try {
       return format(new Date(dateString), 'MMM dd, yyyy');
     } catch (e) {
-      return dateString;
+      return dateString || 'N/A';
     }
   };
 
@@ -145,196 +131,178 @@ function MyLearningPlans() {
     try {
       return format(new Date(dateString), 'yyyy-MM-dd');
     } catch (e) {
-      return dateString;
+      return dateString || '';
     }
   };
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-      {/* Navigation Bar */}
-      <NavBar />
-
-      {/* SideMenu */}
-      <Box
-        sx={{
-          width: '250px',
-          height: '100vh',
-          position: 'fixed',
-          top: '56px',
-          left: 0,
-          backgroundColor: '#ffffff',
-          boxShadow: '2px 0 5px rgba(0,0,0,0.1)',
-          zIndex: 1000,
-          '@media (max-width: 960px)': {
-            width: '200px',
-          },
-          '@media (max-width: 600px)': {
-            width: '60px',
-          },
-        }}
-      >
-        <SideMenu />
-      </Box>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#121212' }}>
+      {/* Side Menu */}
+      <SideMenu />
 
       {/* Main Content */}
-      <Box
-        sx={{
-          flex: 1,
-          marginLeft: '250px',
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100vh',
-          overflowY: 'auto',
-          backgroundColor: '#f5f7fa',
-          '@media (max-width: 960px)': {
-            marginLeft: '200px',
-          },
-          '@media (max-width: 600px)': {
-            marginLeft: '60px',
-          },
-        }}
-      >
-        <Container maxWidth="lg" sx={{ py: 4, flexGrow: 1 }}>
-          <Paper elevation={6} sx={{ p: 4, mb: 4, borderRadius: 2, backgroundColor: '#ffffff' }}>
-            <Typography variant="h3" gutterBottom align="center" color="#1a3c57" fontWeight="bold">
-              My Learning Plans
-            </Typography>
-            <Divider sx={{ mb: 4, borderColor: '#1a3c57' }} />
+      <Box sx={{ flex: 1, ml: '240px' }}>
+        <NavBar />
+        <Container maxWidth="lg" sx={{ py: 6, mt: 8 }}>
+          <Typography 
+            variant="h4" 
+            gutterBottom 
+            align="center" 
+            sx={{ color: '#ffffff', fontWeight: 600, mb: 4 }}
+          >
+            My Learning Plans
+          </Typography>
 
-            {loading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-                <CircularProgress sx={{ color: '#1a3c57' }} />
-              </Box>
-            ) : error ? (
-              <Typography color="error" align="center" sx={{ p: 4 }}>
-                {error}
-              </Typography>
-            ) : plans.length === 0 ? (
-              <Typography align="center" sx={{ p: 4, color: '#666' }}>
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+              <CircularProgress sx={{ color: '#ffffff' }} />
+            </Box>
+          ) : error ? (
+            <Alert severity="error" sx={{ bgcolor: '#2c2c2c', color: '#ffffff', m: 4 }}>
+              {error}
+            </Alert>
+          ) : plans.length === 0 ? (
+            <Box sx={{ textAlign: 'center', p: 4 }}>
+              <Typography sx={{ color: '#b0b0b0', mb: 3 }}>
                 You don't have any learning plans yet. Create your first one!
               </Typography>
-            ) : (
-              <Grid container spacing={3}>
-                {plans.map((plan) => {
-                  const status = getPlanStatus(plan.startDate, plan.endDate);
-                  
-                  return (
-                    <Grid item xs={12} md={6} lg={4} key={plan.id}>
-                      <Card 
-                        elevation={4}
-                        sx={{ 
-                          height: '100%',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          borderRadius: 2,
-                          transition: 'all 0.3s ease',
-                          '&:hover': {
-                            transform: 'translateY(-5px)',
-                            boxShadow: 8,
-                          },
-                          backgroundColor: '#ffffff',
-                        }}
-                      >
-                        <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                            <Typography variant="h5" component="h2" color="#1a3c57" noWrap>
-                              {plan.title}
-                            </Typography>
-                            <Chip 
-                              label={status.label} 
-                              color={status.color} 
-                              size="small" 
-                              sx={{ fontWeight: 'bold' }}
-                            />
-                          </Box>
-                          
+              <Button
+                variant="contained"
+                onClick={() => navigate('/learning/learning-plan')}
+                sx={{
+                  bgcolor: '#0288d1',
+                  color: '#ffffff',
+                  '&:hover': { bgcolor: '#039be5' },
+                  textTransform: 'none',
+                  borderRadius: 2,
+                  px: 4,
+                  py: 1.5,
+                }}
+              >
+                Create New Learning Plan
+              </Button>
+            </Box>
+          ) : (
+            <Grid container spacing={4}>
+              {plans.map((plan) => {
+                const status = getPlanStatus(plan.startDate, plan.endDate);
+                const chipColors = {
+                  info: { bgcolor: '#0288d1', color: '#ffffff' },
+                  success: { bgcolor: '#2e7d32', color: '#ffffff' },
+                  warning: { bgcolor: '#f57c00', color: '#ffffff' },
+                };
+                return (
+                  <Grid item xs={12} md={6} lg={4} key={plan.id}>
+                    <Card 
+                      sx={{ 
+                        bgcolor: '#1e1e1e',
+                        borderRadius: 2,
+                        border: '1px solid #333333',
+                        transition: 'transform 0.2s ease',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                        },
+                      }}
+                    >
+                      <CardContent sx={{ p: 3 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                           <Typography 
-                            variant="body1" 
-                            color="#666"
-                            sx={{ 
-                              mb: 2,
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              display: '-webkit-box',
-                              WebkitLineClamp: 3,
-                              WebkitBoxOrient: 'vertical',
-                              height: '4.5em',
-                            }}
+                            variant="h6" 
+                            sx={{ color: '#ffffff', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
                           >
-                            {plan.description}
+                            {plan.title}
                           </Typography>
-                          
-                          <Box sx={{ mt: 2 }}>
-                            <Typography variant="body2" color="#666">
-                              <strong style={{ color: '#1a3c57' }}>Start:</strong> {formatDate(plan.startDate)}
-                            </Typography>
-                            <Typography variant="body2" color="#666">
-                              <strong style={{ color: '#1a3c57' }}>End:</strong> {formatDate(plan.endDate)}
-                            </Typography>
-                          </Box>
-                        </CardContent>
-                        
-                        <CardActions sx={{ justifyContent: 'space-between', p: 2, pt: 0 }}>
-                          <Button 
-                            size="small" 
-                            variant="contained"
-                            onClick={() => handleOpenEditDialog(plan)}
+                          <Chip 
+                            label={status.label} 
                             sx={{ 
-                              backgroundColor: '#1a3c57',
-                              '&:hover': { backgroundColor: '#153e63' },
-                              textTransform: 'none',
+                              ...chipColors[status.color], 
+                              fontWeight: 'bold',
+                              fontSize: '0.75rem',
                             }}
-                          >
-                            Edit
-                          </Button>
-                          <Button 
-                            size="small" 
-                            variant="outlined" 
-                            color="error"
-                            onClick={() => handleDelete(plan.id)}
-                            sx={{ textTransform: 'none' }}
-                          >
-                            Delete
-                          </Button>
-                        </CardActions>
-                      </Card>
-                    </Grid>
-                  );
-                })}
-              </Grid>
-            )}
-          </Paper>
-          
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-            <Button 
-              variant="contained" 
-              color="primary" 
-              href="/learning/learning-plan"
-              size="large"
-              sx={{ 
-                backgroundColor: '#1a3c57',
-                '&:hover': { backgroundColor: '#153e63' },
-                padding: '10px 20px',
-                fontSize: '16px',
-              }}
-            >
-              Create New Learning Plan
-            </Button>
-          </Box>
-
-          {/* Edit Plan Dialog */}
+                          />
+                        </Box>
+                        <Typography 
+                          variant="body2" 
+                          sx={{ color: '#b0b0b0', mb: 2, lineHeight: 1.6 }}
+                        >
+                          {plan.description}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#b0b0b0' }}>
+                          <strong style={{ color: '#e0e0e0' }}>Start:</strong> {formatDate(plan.startDate)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#b0b0b0' }}>
+                          <strong style={{ color: '#e0e0e0' }}>End:</strong> {formatDate(plan.endDate)}
+                        </Typography>
+                      </CardContent>
+                      <CardActions sx={{ p: 2, pt: 0, justifyContent: 'space-between' }}>
+                        <Button 
+                          size="small" 
+                          variant="contained"
+                          onClick={() => handleOpenEditDialog(plan)}
+                          sx={{ 
+                            bgcolor: '#0288d1',
+                            color: '#ffffff',
+                            '&:hover': { bgcolor: '#039be5' },
+                            textTransform: 'none',
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button 
+                          size="small" 
+                          variant="outlined"
+                          onClick={() => handleDelete(plan.id)}
+                          sx={{ 
+                            borderColor: '#ff5252',
+                            color: '#ff5252',
+                            '&:hover': { 
+                              bgcolor: '#ff525233',
+                              borderColor: '#ff5252',
+                            },
+                            textTransform: 'none',
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </CardActions>
+                    </Card>
+                  </Grid>
+                );
+              })}
+            </Grid>
+          )}
+          {plans.length > 0 && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
+              <Button
+                variant="contained"
+                onClick={() => navigate('/learning/learning-plan')}
+                sx={{
+                  bgcolor: '#0288d1',
+                  color: '#ffffff',
+                  '&:hover': { bgcolor: '#039be5' },
+                  textTransform: 'none',
+                  borderRadius: 2,
+                  px: 4,
+                  py: 1.5,
+                }}
+              >
+                Create New Learning Plan
+              </Button>
+            </Box>
+          )}
           <Dialog 
             open={editDialogOpen} 
             onClose={handleCloseEditDialog}
             fullWidth
             maxWidth="sm"
-            PaperProps={{ elevation: 6, sx: { borderRadius: 2 } }}
+            PaperProps={{ sx: { bgcolor: '#1e1e1e', borderRadius: 2 } }}
           >
-            <DialogTitle sx={{ backgroundColor: '#1a3c57', color: '#ffffff', p: 2 }}>
+            <DialogTitle sx={{ bgcolor: '#1e1e1e', color: '#ffffff', p: 2 }}>
               Edit Learning Plan
             </DialogTitle>
             <form onSubmit={handleEditSubmit}>
-              <DialogContent sx={{ p: 3 }}>
+              <DialogContent sx={{ p: 3, bgcolor: '#1e1e1e' }}>
                 <TextField
                   fullWidth
                   label="Title"
@@ -344,8 +312,16 @@ function MyLearningPlans() {
                   value={editFormData.title}
                   onChange={handleEditFormChange}
                   required
-                  InputLabelProps={{ style: { color: '#1a3c57' } }}
-                  InputProps={{ sx: { borderRadius: 1 } }}
+                  InputLabelProps={{ style: { color: '#b0b0b0' } }}
+                  InputProps={{ 
+                    sx: { 
+                      color: '#e0e0e0',
+                      bgcolor: '#252525',
+                      borderRadius: 1,
+                      '& .MuiOutlinedInput-notchedOutline': { borderColor: '#333333' },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#0288d1' },
+                    }
+                  }}
                 />
                 <TextField
                   fullWidth
@@ -358,8 +334,16 @@ function MyLearningPlans() {
                   value={editFormData.description}
                   onChange={handleEditFormChange}
                   required
-                  InputLabelProps={{ style: { color: '#1a3c57' } }}
-                  InputProps={{ sx: { borderRadius: 1 } }}
+                  InputLabelProps={{ style: { color: '#b0b0b0' } }}
+                  InputProps={{ 
+                    sx: { 
+                      color: '#e0e0e0',
+                      bgcolor: '#252525',
+                      borderRadius: 1,
+                      '& .MuiOutlinedInput-notchedOutline': { borderColor: '#333333' },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#0288d1' },
+                    }
+                  }}
                 />
                 <TextField
                   fullWidth
@@ -368,11 +352,19 @@ function MyLearningPlans() {
                   type="date"
                   variant="outlined"
                   margin="normal"
-                  InputLabelProps={{ shrink: true, style: { color: '#1a3c57' } }}
+                  InputLabelProps={{ shrink: true, style: { color: '#b0b0b0' } }}
                   value={formatDateForInput(editFormData.startDate)}
                   onChange={handleEditFormChange}
                   required
-                  InputProps={{ sx: { borderRadius: 1 } }}
+                  InputProps={{ 
+                    sx: { 
+                      color: '#e0e0e0',
+                      bgcolor: '#252525',
+                      borderRadius: 1,
+                      '& .MuiOutlinedInput-notchedOutline': { borderColor: '#333333' },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#0288d1' },
+                    }
+                  }}
                 />
                 <TextField
                   fullWidth
@@ -381,25 +373,37 @@ function MyLearningPlans() {
                   type="date"
                   variant="outlined"
                   margin="normal"
-                  InputLabelProps={{ shrink: true, style: { color: '#1a3c57' } }}
+                  InputLabelProps={{ shrink: true, style: { color: '#b0b0b0' } }}
                   value={formatDateForInput(editFormData.endDate)}
                   onChange={handleEditFormChange}
                   required
-                  InputProps={{ sx: { borderRadius: 1 } }}
+                  InputProps={{ 
+                    sx: { 
+                      color: '#e0e0e0',
+                      bgcolor: '#252525',
+                      borderRadius: 1,
+                      '& .MuiOutlinedInput-notchedOutline': { borderColor: '#333333' },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#0288d1' },
+                    }
+                  }}
                 />
               </DialogContent>
-              <DialogActions sx={{ p: 2, backgroundColor: '#f5f7fa' }}>
-                <Button onClick={handleCloseEditDialog} disabled={updating} sx={{ textTransform: 'none', color: '#666' }}>
+              <DialogActions sx={{ p: 2, bgcolor: '#1e1e1e' }}>
+                <Button 
+                  onClick={handleCloseEditDialog} 
+                  disabled={updating} 
+                  sx={{ color: '#b0b0b0', textTransform: 'none' }}
+                >
                   Cancel
                 </Button>
                 <Button 
                   type="submit" 
                   variant="contained" 
-                  color="primary"
                   disabled={updating}
                   sx={{ 
-                    backgroundColor: '#1a3c57',
-                    '&:hover': { backgroundColor: '#153e63' },
+                    bgcolor: '#0288d1',
+                    color: '#ffffff',
+                    '&:hover': { bgcolor: '#039be5' },
                     textTransform: 'none',
                   }}
                 >

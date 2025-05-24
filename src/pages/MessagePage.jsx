@@ -6,16 +6,13 @@ import SideMenu from "../components/SideMenu";
 import {
   Box,
   TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
   Typography,
   CircularProgress,
   Alert,
   Button,
   IconButton,
   Menu,
+  MenuItem,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import SendIcon from "@mui/icons-material/Send";
@@ -29,8 +26,6 @@ const MessagePage = () => {
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [editContent, setEditContent] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortOption, setSortOption] = useState("oldest");
-  const [groupOption, setGroupOption] = useState("none");
   const messagesEndRef = useRef(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedMessageId, setSelectedMessageId] = useState(null);
@@ -39,14 +34,12 @@ const MessagePage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch username
         const usernameResponse = await axios.get(
           `http://localhost:8080/api/chat/username/${userId}`,
           { withCredentials: true }
         );
         setReceiverUsername(usernameResponse.data.username);
 
-        // Fetch messages
         const messagesResponse = await axios.get(
           `http://localhost:8080/api/chat/messages/${userId}`,
           { withCredentials: true }
@@ -90,6 +83,8 @@ const MessagePage = () => {
   };
 
   const handleEditMessage = async (messageId) => {
+    if (!editContent.trim()) return;
+
     try {
       const response = await axios.put(
         `http://localhost:8080/api/chat/message/${messageId}`,
@@ -145,15 +140,9 @@ const MessagePage = () => {
     setSelectedMessageId(null);
   };
 
-  const filteredMessages = messages
-    .filter((msg) =>
-      msg.content.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .sort((a, b) =>
-      sortOption === "newest"
-        ? new Date(b.timestamp) - new Date(a.timestamp)
-        : new Date(a.timestamp) - new Date(b.timestamp)
-    );
+  const filteredMessages = messages.filter((msg) =>
+    msg.content.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (loading) {
     return (
@@ -164,11 +153,11 @@ const MessagePage = () => {
           alignItems: "center",
           justifyContent: "center",
           height: "100vh",
-          backgroundColor: "#f8f9fa",
+          bgcolor: "#121212",
         }}
       >
-        <CircularProgress sx={{ color: "#007AFF" }} />
-        <Typography variant="body1" sx={{ mt: 2, color: "#666" }}>
+        <CircularProgress sx={{ color: "#ffffff" }} />
+        <Typography variant="body1" sx={{ mt: 2, color: "#b0b0b0" }}>
           Loading messages...
         </Typography>
       </Box>
@@ -184,17 +173,22 @@ const MessagePage = () => {
           alignItems: "center",
           justifyContent: "center",
           height: "100vh",
-          backgroundColor: "#f8f9fa",
+          bgcolor: "#121212",
         }}
       >
-        <Alert severity="error" sx={{ mb: 2, width: "80%", maxWidth: "400px" }}>
+        <Alert severity="error" sx={{ bgcolor: "#2c2c2c", color: "#ffffff", mb: 2, width: "80%", maxWidth: "400px" }}>
           {error}
         </Alert>
         <Button
           variant="contained"
-          color="error"
           onClick={() => window.location.reload()}
-          sx={{ textTransform: "none" }}
+          sx={{
+            bgcolor: "#0288d1",
+            color: "#ffffff",
+            "&:hover": { bgcolor: "#039be5" },
+            textTransform: "none",
+            borderRadius: 2,
+          }}
         >
           Try Again
         </Button>
@@ -206,433 +200,363 @@ const MessagePage = () => {
     <Box
       sx={{
         display: "flex",
-        height: "100vh",
-        backgroundColor: "#f8f9fa",
+        minHeight: "100vh",
+        bgcolor: "#121212",
         fontFamily: "'Segoe UI', Roboto, sans-serif",
       }}
     >
-      <NavBar />
-      <Box
-        sx={{
-          width: "250px",
-          height: "100vh",
-          position: "fixed",
-          top: "56px",
-          left: 0,
-          backgroundColor: "white",
-          boxShadow: "2px 0 5px rgba(0,0,0,0.1)",
-          "@media (max-width: 960px)": {
-            width: "200px",
-          },
-          "@media (max-width: 600px)": {
-            width: "60px",
-          },
-        }}
-      >
-        <SideMenu />
-      </Box>
-      <Box
-        sx={{
-          flex: 1,
-          marginLeft: "250px",
-          display: "flex",
-          flexDirection: "column",
-          height: "100vh",
-          "@media (max-width: 960px)": {
-            marginLeft: "200px",
-          },
-          "@media (max-width: 600px)": {
-            marginLeft: "60px",
-          },
-        }}
-      >
+      <SideMenu />
+      <Box sx={{ flex: 1, ml: "240px" }}>
+        <NavBar />
         <Box
           sx={{
             display: "flex",
-            gap: 2,
-            p: 2,
-            backgroundColor: "white",
-            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-            mt: "56px",
-            "@media (max-width: 600px)": {
-              flexDirection: "column",
-              p: 1,
-              gap: 1,
-            },
-          }}
-        >
-          <TextField
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search messages..."
-            variant="outlined"
-            size="small"
-            sx={{
-              flex: 1,
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "20px",
-              },
-            }}
-          />
-        </Box>
-        <Box
-          sx={{
-            p: 2,
-            borderBottom: "1px solid #e0e0e0",
-            backgroundColor: "white",
-            "@media (max-width: 600px)": {
-              p: 1,
-            },
-          }}
-        >
-          <Typography
-            variant="h6"
-            sx={{
-              color: "#333",
-              fontWeight: 600,
-              "@media (max-width: 600px)": {
-                fontSize: "18px",
-              },
-            }}
-          >
-            Chat with {receiverUsername}
-          </Typography>
-        </Box>
-        <Box
-          sx={{
-            flex: 1,
-            overflowY: "auto",
-            p: 2,
-            backgroundColor: "white",
-            "@media (max-width: 600px)": {
-              p: 1,
-            },
-          }}
-        >
-          {filteredMessages.length === 0 ? (
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "100%",
-                color: "#666",
-                "@media (max-width: 600px)": {
-                  height: "60vh",
-                },
-              }}
-            >
-              <Typography sx={{ fontSize: "48px", mb: 1 }}>💬</Typography>
-              <Typography variant="h6" sx={{ fontWeight: 500, mb: 1 }}>
-                No messages yet
-              </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.7 }}>
-                Send a message to start the conversation!
-              </Typography>
-            </Box>
-          ) : (
-            <>
-              {filteredMessages.map((message) => {
-                const isCurrentUser = message.senderId !== userId;
-
-                return (
-                  <Box
-                    key={message.id}
-                    sx={{
-                      display: "flex",
-                      justifyContent: isCurrentUser ? "flex-end" : "flex-start",
-                      mb: 2,
-                      animation: "fadeIn 0.3s ease-in",
-                      "@media (max-width: 600px)": {
-                        mb: 1,
-                      },
-                    }}
-                  >
-                    {editingMessageId === message.id ? (
-                      <Box
-                        sx={{
-                          width: "100%",
-                          maxWidth: "75%",
-                          backgroundColor: "#f5f5f5",
-                          p: 2,
-                          borderRadius: "12px",
-                          boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)",
-                          "@media (max-width: 600px)": {
-                            maxWidth: "90%",
-                            p: 1.5,
-                          },
-                        }}
-                      >
-                        <TextField
-                          value={editContent}
-                          onChange={(e) => setEditContent(e.target.value)}
-                          fullWidth
-                          multiline
-                          rows={3}
-                          variant="outlined"
-                          sx={{
-                            "& .MuiOutlinedInput-root": {
-                              borderRadius: "8px",
-                              background: "white",
-                              "@media (max-width: 600px)": {
-                                fontSize: "14px",
-                              },
-                            },
-                          }}
-                          autoFocus
-                        />
-                        <Box
-                          sx={{
-                            mt: 1,
-                            display: "flex",
-                            justifyContent: "flex-end",
-                            gap: 1,
-                          }}
-                        >
-                          <Button
-                            variant="outlined"
-                            onClick={() => setEditingMessageId(null)}
-                            sx={{
-                              textTransform: "none",
-                              color: "#666",
-                              "@media (max-width: 600px)": {
-                                padding: "6px 12px",
-                                fontSize: "14px",
-                              },
-                            }}
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            variant="contained"
-                            onClick={() => handleEditMessage(message.id)}
-                            sx={{
-                              textTransform: "none",
-                              background: "#007AFF",
-                              "&:hover": { background: "#0066CC" },
-                              "@media (max-width: 600px)": {
-                                padding: "6px 12px",
-                                fontSize: "14px",
-                              },
-                            }}
-                          >
-                            Save
-                          </Button>
-                        </Box>
-                      </Box>
-                    ) : (
-                      <Box
-                        sx={{
-                          maxWidth: "75%",
-                          p: 2,
-                          borderRadius: "18px",
-                          backgroundColor: isCurrentUser ? "#007AFF" : "#F1F1F1",
-                          color: isCurrentUser ? "white" : "#333",
-                          boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)",
-                          position: "relative",
-                          "@media (max-width: 600px)": {
-                            maxWidth: "90%",
-                            p: 1.5,
-                            borderRadius: "15px",
-                          },
-                        }}
-                      >
-                        <Typography
-                          sx={{
-                            fontSize: "14px",
-                            fontWeight: 600,
-                            mb: 0.5,
-                            "@media (max-width: 600px)": {
-                              fontSize: "13px",
-                            },
-                          }}
-                        >
-                          {isCurrentUser ? "You" : (message.senderUsername || message.senderId)}
-                        </Typography>
-                        <Typography
-                          sx={{
-                            fontSize: "15px",
-                            lineHeight: 1.4,
-                            "@media (max-width: 600px)": {
-                              fontSize: "14px",
-                            },
-                          }}
-                        >
-                          {message.content}
-                        </Typography>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            mt: 1,
-                            fontSize: "11px",
-                            opacity: 0.8,
-                            "@media (max-width: 600px)": {
-                              fontSize: "10px",
-                            },
-                          }}
-                        >
-                          <Typography>
-                            {new Date(message.timestamp).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </Typography>
-                          {message.edited && (
-                            <Typography
-                              sx={{
-                                background: "rgba(0,0,0,0.1)",
-                                p: "2px 5px",
-                                borderRadius: "3px",
-                                "@media (max-width: 600px)": {
-                                  p: "1px 4px",
-                                  fontSize: "9px",
-                                },
-                              }}
-                            >
-                              edited
-                            </Typography>
-                          )}
-                        </Box>
-                        {isCurrentUser && (
-                          <Box
-                            sx={{
-                              position: "absolute",
-                              top: "-8px",
-                              right: 0,
-                              background: "white",
-                              p: 0.2,
-                              borderRadius: "12px",
-                              boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
-                              "@media (max-width: 600px)": {
-                                p: 0.1,
-                              },
-                            }}
-                          >
-                            <IconButton
-                              size="small"
-                              onClick={(event) => handleOpenMenu(event, message.id)}
-                              sx={{
-                                color: "#666",
-                                "&:hover": { color: "#007AFF" },
-                                p: 0.3,
-                                "@media (max-width: 600px)": {
-                                  p: 0.2,
-                                },
-                              }}
-                            >
-                              <MoreVertIcon sx={{ fontSize: "16px" }} />
-                            </IconButton>
-                          </Box>
-                        )}
-                      </Box>
-                    )}
-                  </Box>
-                );
-              })}
-              <div ref={messagesEndRef} />
-            </>
-          )}
-        </Box>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleCloseMenu}
-          PaperProps={{
-            elevation: 3,
-            sx: {
-              borderRadius: "6px",
-              minWidth: "100px",
-            },
-          }}
-        >
-          <MenuItem
-            onClick={() => {
-              const message = messages.find((msg) => msg.id === selectedMessageId);
-              if (message) startEditing(message);
-            }}
-            sx={{ color: "#007AFF", fontSize: "12px", py: 0.5 }}
-          >
-            Edit
-          </MenuItem>
-          <MenuItem
-            onClick={() => {
-              handleDeleteMessage(selectedMessageId);
-              handleCloseMenu();
-            }}
-            sx={{ color: "#d32f2f", fontSize: "12px", py: 0.5 }}
-          >
-            Delete
-          </MenuItem>
-        </Menu>
-        <Box
-          sx={{
-            p: 2,
-            backgroundColor: "white",
-            borderTop: "1px solid #e0e0e0",
-            boxShadow: "0 -2px 4px rgba(0, 0, 0, 0.05)",
-            "@media (max-width: 600px)": {
-              p: 1,
-            },
+            flexDirection: "column",
+            height: "calc(100vh - 64px)", // Subtract NavBar height
+            mt: 8,
           }}
         >
           <Box
             sx={{
               display: "flex",
-              gap: 1,
-              backgroundColor: "#f5f5f5",
-              borderRadius: "25px",
-              p: 1,
-              "@media (max-width: 600px)": {
-                flexDirection: "column",
-                borderRadius: "20px",
-                p: 0.5,
-              },
+              gap: 2,
+              p: 2,
+              bgcolor: "#1e1e1e",
+              boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
             }}
           >
             <TextField
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Type a message..."
-              fullWidth
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search messages..."
               variant="outlined"
+              size="small"
               sx={{
+                flex: 1,
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "20px",
-                  background: "white",
-                  "&:hover": { borderColor: "#007AFF" },
-                  "&.Mui-focused": { borderColor: "#007AFF" },
-                  "@media (max-width: 600px)": {
-                    fontSize: "14px",
-                    "& .MuiOutlinedInput-root": { borderRadius: "15px" },
-                  },
+                  bgcolor: "#252525",
+                  color: "#e0e0e0",
+                  "& .MuiOutlinedInput-notchedOutline": { borderColor: "#333333" },
+                  "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#0288d1" },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#0288d1" },
                 },
+                "& .MuiInputLabel-root": { color: "#b0b0b0" },
               }}
-              onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
             />
-            <Button
-              variant="contained"
-              onClick={handleSendMessage}
-              disabled={!newMessage.trim()}
+          </Box>
+          <Box
+            sx={{
+              p: 2,
+              borderBottom: "1px solid #333333",
+              bgcolor: "#1e1e1e",
+            }}
+          >
+            <Typography
+              variant="h6"
               sx={{
-                background: "#007AFF",
-                "&:hover": { background: "#0066CC" },
-                "&:disabled": { background: "#cccccc", cursor: "not-allowed" },
-                borderRadius: "20px",
-                minWidth: "50px",
-                "@media (max-width: 600px)": {
-                  borderRadius: "15px",
-                  minWidth: "100%",
-                  padding: "8px",
-                },
+                color: "#ffffff",
+                fontWeight: 600,
               }}
             >
-              <SendIcon />
-            </Button>
+              Chat with {receiverUsername}
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              flex: 1,
+              overflowY: "auto",
+              p: 3,
+              bgcolor: "#121212",
+              pb: "80px", // Space for fixed input area
+            }}
+          >
+            {filteredMessages.length === 0 ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  height: "100%",
+                  color: "#b0b0b0",
+                }}
+              >
+                <Typography sx={{ fontSize: "48px", mb: 1 }}>💬</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 500, mb: 1, color: "#ffffff" }}>
+                  No messages yet
+                </Typography>
+                <Typography variant="body2" sx={{ color: "#b0b0b0" }}>
+                  Send a message to start the conversation!
+                </Typography>
+              </Box>
+            ) : (
+              <>
+                {filteredMessages.map((message) => {
+                  const isCurrentUser = message.senderId !== userId;
+
+                  return (
+                    <Box
+                      key={message.id}
+                      sx={{
+                        display: "flex",
+                        justifyContent: isCurrentUser ? "flex-end" : "flex-start",
+                        mb: 2,
+                        animation: "fadeIn 0.3s ease-in",
+                      }}
+                    >
+                      {editingMessageId === message.id ? (
+                        <Box
+                          sx={{
+                            maxWidth: "70%",
+                            bgcolor: "#252525",
+                            p: 2,
+                            borderRadius: "16px",
+                            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
+                          }}
+                        >
+                          <TextField
+                            value={editContent}
+                            onChange={(e) => setEditContent(e.target.value)}
+                            fullWidth
+                            multiline
+                            rows={3}
+                            variant="outlined"
+                            sx={{
+                              "& .MuiOutlinedInput-root": {
+                                borderRadius: "8px",
+                                bgcolor: "#333333",
+                                color: "#e0e0e0",
+                                "& .MuiOutlinedInput-notchedOutline": { borderColor: "#333333" },
+                                "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#0288d1" },
+                              },
+                            }}
+                            autoFocus
+                          />
+                          <Box
+                            sx={{
+                              mt: 1,
+                              display: "flex",
+                              justifyContent: "flex-end",
+                              gap: 1,
+                            }}
+                          >
+                            <Button
+                              variant="outlined"
+                              onClick={() => setEditingMessageId(null)}
+                              sx={{
+                                textTransform: "none",
+                                color: "#b0b0b0",
+                                borderColor: "#b0b0b0",
+                                "&:hover": { borderColor: "#0288d1", bgcolor: "#0288d133" },
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              variant="contained"
+                              onClick={() => handleEditMessage(message.id)}
+                              disabled={!editContent.trim()}
+                              sx={{
+                                textTransform: "none",
+                                bgcolor: "#0288d1",
+                                color: "#ffffff",
+                                "&:hover": { bgcolor: "#039be5" },
+                                "&:disabled": { bgcolor: "#cccccc", cursor: "not-allowed" },
+                              }}
+                            >
+                              Save
+                            </Button>
+                          </Box>
+                        </Box>
+                      ) : (
+                        <Box
+                          sx={{
+                            maxWidth: "70%",
+                            p: 2,
+                            borderRadius: "16px",
+                            bgcolor: isCurrentUser ? "#0288d1" : "#333333",
+                            color: isCurrentUser ? "#ffffff" : "#e0e0e0",
+                            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
+                            position: "relative",
+                            "&:hover": {
+                              bgcolor: isCurrentUser ? "#039be5" : "#3a3a3a",
+                            },
+                          }}
+                        >
+                          <Typography
+                            sx={{
+                              fontSize: "14px",
+                              fontWeight: 600,
+                              mb: 0.5,
+                              color: "#ffffff",
+                            }}
+                          >
+                            {isCurrentUser ? "You" : (message.senderUsername || message.senderId)}
+                          </Typography>
+                          <Typography
+                            sx={{
+                              fontSize: "15px",
+                              lineHeight: 1.4,
+                            }}
+                          >
+                            {message.content}
+                          </Typography>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              mt: 1,
+                              fontSize: "12px",
+                              color: "#b0b0b0",
+                            }}
+                          >
+                            <Typography>
+                              {new Date(message.timestamp).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </Typography>
+                            {message.edited && (
+                              <Typography
+                                sx={{
+                                  bgcolor: "rgba(0,0,0,0.2)",
+                                  p: "2px 5px",
+                                  borderRadius: "3px",
+                                }}
+                              >
+                                edited
+                              </Typography>
+                            )}
+                          </Box>
+                          {isCurrentUser && (
+                            <Box
+                              sx={{
+                                position: "absolute",
+                                top: "-8px",
+                                right: 0,
+                                bgcolor: "#1e1e1e",
+                                p: 0.2,
+                                borderRadius: "12px",
+                                boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+                              }}
+                            >
+                              <IconButton
+                                size="small"
+                                onClick={(event) => handleOpenMenu(event, message.id)}
+                                sx={{
+                                  color: "#b0b0b0",
+                                  "&:hover": { color: "#0288d1" },
+                                  p: 0.3,
+                                }}
+                              >
+                                <MoreVertIcon sx={{ fontSize: "16px" }} />
+                              </IconButton>
+                            </Box>
+                          )}
+                        </Box>
+                      )}
+                    </Box>
+                  );
+                })}
+                <div ref={messagesEndRef} />
+              </>
+            )}
+          </Box>
+          <Box
+            sx={{
+              position: "fixed",
+              bottom: 0,
+              left: "240px",
+              right: 0,
+              p: 2,
+              bgcolor: "#1e1e1e",
+              borderTop: "1px solid #333333",
+              boxShadow: "0 -2px 4px rgba(0, 0, 0, 0.2)",
+              zIndex: 1000,
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                gap: 1,
+                bgcolor: "#252525",
+                borderRadius: "25px",
+                p: 1,
+                maxWidth: "lg",
+                mx: "auto",
+              }}
+            >
+              <TextField
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Type a message..."
+                fullWidth
+                variant="outlined"
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "20px",
+                    bgcolor: "#333333",
+                    color: "#e0e0e0",
+                    "& .MuiOutlinedInput-notchedOutline": { borderColor: "#333333" },
+                    "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#0288d1" },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#0288d1" },
+                  },
+                  "& .MuiInputLabel-root": { color: "#b0b0b0" },
+                }}
+                onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+              />
+              <Button
+                variant="contained"
+                onClick={handleSendMessage}
+                disabled={!newMessage.trim()}
+                sx={{
+                  bgcolor: "#0288d1",
+                  color: "#ffffff",
+                  "&:hover": { bgcolor: "#039be5" },
+                  "&:disabled": { bgcolor: "#cccccc", cursor: "not-allowed" },
+                  borderRadius: "20px",
+                  minWidth: "50px",
+                }}
+              >
+                <SendIcon />
+              </Button>
+            </Box>
           </Box>
         </Box>
       </Box>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleCloseMenu}
+        PaperProps={{
+          sx: {
+            bgcolor: "#1e1e1e",
+            borderRadius: "6px",
+            minWidth: "100px",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+          },
+        }}
+      >
+        <MenuItem
+          onClick={() => {
+            const message = messages.find((msg) => msg.id === selectedMessageId);
+            if (message) startEditing(message);
+          }}
+          sx={{ color: "#0288d1", fontSize: "12px", py: 0.5 }}
+        >
+          Edit
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            handleDeleteMessage(selectedMessageId);
+            handleCloseMenu();
+          }}
+          sx={{ color: "#ff5252", fontSize: "12px", py: 0.5 }}
+        >
+          Delete
+        </MenuItem>
+      </Menu>
     </Box>
   );
 };
